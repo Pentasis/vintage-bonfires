@@ -1,0 +1,14 @@
+{
+	"block-bonfire-lit": "Lit Bonfire",
+	"block-bonfire-extinct": "Extinct Bonfire",
+	"block-bonfire-construct1": "Bonfire Base",
+	"block-bonfire-construct2": "Bonfire (Under Construction)",
+	"block-bonfire-construct3": "Bonfire (Under Construction)",
+	"block-bonfire-construct4": "Bonfire (Under Construction)",
+	"block-bonfire-cold": "Bonfire",
+  
+    "blockhelp-bonfire-fuel": "x8 Add Fuel",
+  
+	"handbooktitle-bonfire": "Bonfires",
+    "handbooktext-bonfire": "Start a bonfire by crafting a bonfire base, placing it, fuelling it with 24 firewood, and lighting it with a torch."
+}
