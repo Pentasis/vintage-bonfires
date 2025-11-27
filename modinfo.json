@@ -1,0 +1,14 @@
+{
+	"type": "code",
+	"name": "Bonfires return",
+	"modid": "bonfires-return",
+	"version": "1.0.0",
+	
+	"description" : "Adds bonfires.",
+	"website": "https://github.com/Zarkonnen/VSBonfires/tree/main",
+	"authors": [ "Zarkonnen", "Pentasis" ],
+	
+	"dependencies": {
+		"game": "1.21.5"
+	}
+}
