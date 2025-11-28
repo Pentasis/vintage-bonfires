@@ -12,6 +12,7 @@ namespace Bonfires
     {
         private WorldInteraction[] _interactions = System.Array.Empty<WorldInteraction>();
 
+        // Stage property now correctly reflects the state of the *block definition*
         public int Stage
         {
             get
@@ -21,19 +22,25 @@ namespace Bonfires
                     "construct1" => 1,
                     "construct2" => 2,
                     "construct3" => 3,
-                    _ => 4
+                    "cold" => 4, // Fully constructed, ready for fuel
+                    "extinct" => 0, // Burned out, needs to be rebuilt
+                    _ => 0 // Default for unknown states, treat as needing construction
                 };
             }
         }
 
+        // NextStageCodePart now correctly reflects the state of the *block definition*
         public string NextStageCodePart
         {
             get
             {
                 return LastCodePart() switch
                 {
+                    "cold" => "construct1",
+                    "extinct" => "construct1", // Extinct bonfires also start construction from stage 1
                     "construct1" => "construct2",
                     "construct2" => "construct3",
+                    "construct3" => "cold", // After construct3, it becomes a fully built 'cold' bonfire
                     _ => "cold"
                 };
             }
@@ -71,8 +78,9 @@ namespace Bonfires
                     Itemstacks = canIgniteStacks.ToArray(),
                     GetMatchingStacks = (wi, bs, _) =>
                     {
-                        var bf = coreApi.World.BlockAccessor.GetBlock(bs.Position);
-                        return bf.LastCodePart().Equals("cold") ? wi.Itemstacks : null;
+                        var bef = coreApi.World.BlockAccessor.GetBlockEntity(bs.Position) as BlockEntityBonfire;
+                        // Can only ignite if it has fuel and is not already burning
+                        return bef != null && bef.TotalFuel > 0 && !bef.Burning ? wi.Itemstacks : null;
                     }
                 },
                 new WorldInteraction
@@ -82,8 +90,18 @@ namespace Bonfires
                     Itemstacks = fuelStacks.ToArray(),
                     GetMatchingStacks = (wi, bs, _) =>
                     {
-                        var bf = coreApi.World.BlockAccessor.GetBlock(bs.Position);
-                        return bf.LastCodePart().StartsWith("construct") || bf.LastCodePart().Equals("cold") ? wi.Itemstacks : null;
+                        var currentBlockInWorld = coreApi.World.BlockAccessor.GetBlock(bs.Position);
+                        var bef = coreApi.World.BlockAccessor.GetBlockEntity(bs.Position) as BlockEntityBonfire;
+                        
+                        // Get the Stage from the actual block in the world
+                        int currentStage = (currentBlockInWorld as BlockBonfire)?.Stage ?? 0;
+
+                        // Show "Add Fuel" if it's not burning and either:
+                        // 1. It's in a construction stage (Stage 0-3)
+                        // 2. It's fully constructed (Stage 4, 'cold' state) and not full of fuel
+                        return !currentBlockInWorld.LastCodePart().Equals("lit") && bef != null &&
+                               (currentStage < 4 || (currentStage == 4 && bef.TotalFuel < bef.MaxFuel))
+                               ? wi.Itemstacks : null;
                     }
                 }
             };
@@ -130,32 +148,34 @@ namespace Bonfires
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
             var hotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
-            if (hotbarSlot?.Itemstack?.Collectible.Code.Path != "firewood") 
+            // Only proceed if holding firewood
+            if (hotbarSlot?.Itemstack?.Collectible.Code.Path != "firewood")
                 return base.OnBlockInteractStart(world, byPlayer, blockSel);
-            
-            if (Stage < 4)
+
+            BlockPos pos = blockSel.Position;
+            // Get the actual block instance in the world at this position
+            Block currentBlockInWorld = world.BlockAccessor.GetBlock(pos);
+            string currentCodePart = currentBlockInWorld.LastCodePart(); // Use the actual block's code part
+
+            // Get the BlockEntityBonfire
+            BlockEntityBonfire? bef = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityBonfire;
+            if (bef == null) return base.OnBlockInteractStart(world, byPlayer, blockSel); // Should not happen if it's a BlockBonfire
+
+            // Handle construction stages
+            // If it's cold, extinct, construct1, construct2, or construct3
+            if (currentCodePart.Equals("cold") || currentCodePart.Equals("extinct") || currentCodePart.StartsWith("construct"))
             {
-                if (hotbarSlot.StackSize >= 8)
+                // If it's construct3, the next interaction adds actual fuel and transitions to 'cold'
+                if (currentCodePart.Equals("construct3"))
                 {
-                    BlockPos pos = blockSel.Position;
-                    Block block = world.GetBlock(CodeWithParts(NextStageCodePart));
-                    world.BlockAccessor.ExchangeBlock(block.BlockId, pos);
-                    world.BlockAccessor.MarkBlockDirty(pos);
-                    if (block.Sounds != null) world.PlaySoundAt(block.Sounds.Place, pos.X, pos.Y, pos.Z, byPlayer);
-                    if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
+                    if (bef.Refuel(1)) // Add 1 fuel to the BE
                     {
-                        hotbarSlot.TakeOut(8);
-                        hotbarSlot.MarkDirty();
-                    }
-                    return true;
-                }
-            }
-            else
-            {
-                if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityBonfire bef)
-                {
-                    if (bef.Refuel(1))
-                    {
+                        // Transition to the 'cold' state (fully built)
+                        Block targetBlock = world.GetBlock(currentBlockInWorld.CodeWithVariant("burnstate", "cold"));
+                        world.BlockAccessor.ExchangeBlock(targetBlock.Id, pos);
+                        world.BlockAccessor.MarkBlockDirty(pos);
+                        if (targetBlock.Sounds != null) world.PlaySoundAt(targetBlock.Sounds.Place, pos.X, pos.Y, pos.Z, byPlayer);
+
                         if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
                         {
                             hotbarSlot.TakeOut(1);
@@ -163,6 +183,52 @@ namespace Bonfires
                         }
                         return true;
                     }
+                }
+                else // For cold, extinct, construct1, construct2: advance construction stage
+                {
+                    // Determine the next state based on the current block's code part
+                    string nextStateCodePart;
+                    switch (currentCodePart)
+                    {
+                        case "extinct":
+                        case "cold":
+                            nextStateCodePart = "construct1";
+                            break;
+                        case "construct1":
+                            nextStateCodePart = "construct2";
+                            break;
+                        case "construct2":
+                            nextStateCodePart = "construct3";
+                            break;
+                        default:
+                            // This case should ideally not be reached if the outer if condition is correct
+                            return base.OnBlockInteractStart(world, byPlayer, blockSel);
+                    }
+
+                    Block nextConstructionBlock = world.GetBlock(currentBlockInWorld.CodeWithVariant("burnstate", nextStateCodePart));
+                    world.BlockAccessor.ExchangeBlock(nextConstructionBlock.Id, pos);
+                    world.BlockAccessor.MarkBlockDirty(pos);
+                    if (nextConstructionBlock.Sounds != null) world.PlaySoundAt(nextConstructionBlock.Sounds.Place, pos.X, pos.Y, pos.Z, byPlayer);
+
+                    if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
+                    {
+                        hotbarSlot.TakeOut(1); // Consume 1 firewood for construction
+                        hotbarSlot.MarkDirty();
+                    }
+                    return true;
+                }
+            }
+            // If it's already a fully built 'cold' bonfire (after construct3) and not burning, add fuel
+            else if (currentCodePart.Equals("cold"))
+            {
+                if (bef.Refuel(1))
+                {
+                    if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
+                    {
+                        hotbarSlot.TakeOut(1);
+                        hotbarSlot.MarkDirty();
+                    }
+                    return true;
                 }
             }
 

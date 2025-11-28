@@ -100,9 +100,8 @@ namespace Bonfires
 
                 if (_remainingBurnSeconds <= 0)
                 {
-                    _remainingBurnSeconds = 0;
                     KillFire();
-
+                    
                     foreach (BlockFacing facing in BlockFacing.ALLFACES)
                     {
                         BlockPos npos = Pos.AddCopy(facing);
@@ -181,8 +180,35 @@ namespace Bonfires
 
         public void KillFire()
         {
-            SetBlockState("extinct");
+            _remainingBurnSeconds = 0;
             UnregisterGameTickListener(_listener);
+
+            // Crack ore/rock logic
+            foreach (BlockFacing facing in BlockFacing.ALLFACES)
+            {
+                BlockPos npos = Pos.AddCopy(facing);
+                Block? belowBlock = Api.World.BlockAccessor.GetBlock(npos);
+                if (belowBlock == null) continue;
+
+                AssetLocation? cracked = null;
+                if (belowBlock.FirstCodePart().Equals("ore"))
+                {
+                    cracked = belowBlock.CodeWithPart("cracked_ore");
+                    cracked.Domain = "bonfires-return";
+                }
+                else if (belowBlock.FirstCodePart().Equals("rock"))
+                {
+                    cracked = belowBlock.CodeWithPart("cracked_rock");
+                    cracked.Domain = "bonfires-return";
+                }
+                if (cracked != null && cracked.Valid)
+                {
+                    Block crackedBlock = Api.World.GetBlock(cracked);
+                    Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
+                }
+            }
+            
+            SetBlockState("extinct"); // Ensure it goes to extinct state
         }
 
         public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
@@ -286,6 +312,8 @@ namespace Bonfires
             base.GetBlockInfo(forPlayer, dsc);
             dsc.AppendLine(Lang.Get("bonfires-return:bonfire-fuel", TotalFuel, MaxFuel));
         }
+
+
 
         public bool Refuel(int amount)
         {
