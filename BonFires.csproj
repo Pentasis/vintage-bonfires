@@ -31,7 +31,21 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Remove="vssurvivalmod-master\**\*.cs" />
+        <Compile Remove="nightwatch\**\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Folder Include="assets\" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="assets\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="modinfo.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    
 </Project>
