@@ -1,12 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
@@ -14,90 +9,80 @@ namespace Bonfires
 {
     public class BlockBonfire : Block
     {
-        WorldInteraction[] interactions;
-        public int Stage { get {
-            switch (LastCodePart())
+        private WorldInteraction[] _interactions = System.Array.Empty<WorldInteraction>();
+
+        public int Stage
+        {
+            get
+            {
+                return LastCodePart() switch
                 {
-                    case "construct1":
-                        return 1;
-                    case "construct2":
-                        return 2;
-                    case "construct3":
-                        return 3;
-                }
-                return 4;
-        } }
+                    "construct1" => 1,
+                    "construct2" => 2,
+                    "construct3" => 3,
+                    _ => 4
+                };
+            }
+        }
 
         public string NextStageCodePart
         {
             get
             {
-                switch (LastCodePart())
+                return LastCodePart() switch
                 {
-                    case "construct1":
-                        return "construct2";
-                    case "construct2":
-                        return "construct3";
-                    case "construct3":
-                        return "cold";
-                }
-                return "cold";
+                    "construct1" => "construct2",
+                    "construct2" => "construct3",
+                    _ => "cold"
+                };
             }
         }
 
-        public override void OnLoaded(ICoreAPI api)
+        public override void OnLoaded(ICoreAPI coreApi)
         {
-            base.OnLoaded(api);
+            base.OnLoaded(coreApi);
 
-            // FIX: Removed ObjectCacheUtil to prevent stale interaction data.
-            // This ensures that the 'interactions' are always up-to-date with the
-            // block's current state.
-            List<ItemStack> canIgniteStacks = new List<ItemStack>();
-            List<ItemStack> fuelStacks = new List<ItemStack>();
+            var canIgniteStacks = new List<ItemStack>();
+            var fuelStacks = new List<ItemStack>();
 
-            foreach (CollectibleObject obj in api.World.Collectibles)
+            foreach (CollectibleObject obj in coreApi.World.Collectibles)
             {
-                if (obj is Block && (obj as Block).HasBehavior<BlockBehaviorCanIgnite>() || obj is ItemFirestarter)
+                if ((obj is Block block && block.HasBehavior<BlockBehaviorCanIgnite>()) || obj is ItemFirestarter)
                 {
-                    List<ItemStack> stacks = obj.GetHandBookStacks(api as ICoreClientAPI);
+                    var stacks = obj.GetHandBookStacks(coreApi as ICoreClientAPI);
                     if (stacks != null) canIgniteStacks.AddRange(stacks);
                 }
-                if (obj is Item && (obj as Item).Code.Path.Equals("firewood") == true)
+
+                if (obj is Item item && item.Code.Path == "firewood")
                 {
-                    List<ItemStack> stacks = obj.GetHandBookStacks(api as ICoreClientAPI);
+                    var stacks = obj.GetHandBookStacks(coreApi as ICoreClientAPI);
                     if (stacks != null) fuelStacks.AddRange(stacks);
                 }
             }
 
-            interactions = new WorldInteraction[]
+            _interactions = new[]
             {
-                new WorldInteraction()
+                new WorldInteraction
                 {
                     ActionLangCode = "blockhelp-firepit-ignite",
                     MouseButton = EnumMouseButton.Right,
                     HotKeyCode = "sneak",
                     Itemstacks = canIgniteStacks.ToArray(),
-                    GetMatchingStacks = (wi, bs, es) => {
-                        Block bf = api.World.BlockAccessor.GetBlock(bs.Position);
-                        if (bf.LastCodePart().Equals("cold"))
-                        {
-                            return wi.Itemstacks;
-                        }
-                        return null;
+                    GetMatchingStacks = (wi, bs, _) =>
+                    {
+                        var bf = coreApi.World.BlockAccessor.GetBlock(bs.Position);
+                        return bf.LastCodePart().Equals("cold") ? wi.Itemstacks : null;
                     }
                 },
-                new WorldInteraction()
+                new WorldInteraction
                 {
                     ActionLangCode = "bonfires:blockhelp-bonfire-fuel",
                     MouseButton = EnumMouseButton.Right,
                     Itemstacks = fuelStacks.ToArray(),
-                    GetMatchingStacks = (wi, bs, es) => {
-                        Block bf = api.World.BlockAccessor.GetBlock(bs.Position);
-                        if (bf.LastCodePart().StartsWith("construct"))
-                        {
-                            return wi.Itemstacks;
-                        }
-                        return null;
+                    GetMatchingStacks = (wi, bs, _) =>
+                    {
+                        var bf = coreApi.World.BlockAccessor.GetBlock(bs.Position);
+                        return bf.LastCodePart().StartsWith("construct") ? wi.Itemstacks : null;
                     }
                 }
             };
@@ -105,50 +90,48 @@ namespace Bonfires
 
         public override WorldInteraction[] GetPlacedBlockInteractionHelp(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer)
         {
-            return interactions.Append(base.GetPlacedBlockInteractionHelp(world, selection, forPlayer));
+            return _interactions.Append(base.GetPlacedBlockInteractionHelp(world, selection, forPlayer));
         }
 
-        public override EnumIgniteState OnTryIgniteBlock(EntityAgent byEntity, BlockPos pos, float secondsIgniting)
+        public override EnumIgniteState OnTryIgnite(IPlayer byPlayer, BlockPos pos, float secondsIgniting, ref EnumHandling handling)
         {
-            BlockEntityBonfire bef = api.World.BlockAccessor.GetBlockEntity(pos) as BlockEntityBonfire;
-            if (bef != null && bef.Burning) return EnumIgniteState.NotIgnitablePreventDefault;
+            if (api.World.BlockAccessor.GetBlockEntity(pos) is BlockEntityBonfire { Burning: true })
+            {
+                return EnumIgniteState.NotIgnitablePreventDefault;
+            }
 
             return secondsIgniting > 3 ? EnumIgniteState.IgniteNow : EnumIgniteState.Ignitable;
         }
 
-        public override void OnTryIgniteBlockOver(EntityAgent byEntity, BlockPos pos, float secondsIgniting, ref EnumHandling handling)
+        public override void OnIgnited(IPlayer byPlayer, BlockPos pos, ref EnumHandling handling)
         {
-            BlockEntityBonfire bef = api.World.BlockAccessor.GetBlockEntity(pos) as BlockEntityBonfire;
-            if (bef != null && !bef.Burning)
+            if (api.World.BlockAccessor.GetBlockEntity(pos) is BlockEntityBonfire bef && !bef.Burning)
             {
-                bef.ignite((byEntity as EntityPlayer)?.PlayerUID);
+                bef.Ignite(byPlayer.PlayerUID);
             }
-
             handling = EnumHandling.PreventDefault;
         }
 
 
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
-            int stage = Stage;
-            ItemStack stack = byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack;
-
-            if (stage < 4 && stack?.Collectible.Code.Path.Equals("firewood") == true && byPlayer.InventoryManager.ActiveHotbarSlot.StackSize >= 8)
+            var hotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
+            if (Stage < 4 && hotbarSlot?.Itemstack?.Collectible.Code.Path == "firewood" && hotbarSlot.StackSize >= 8)
             {
                 BlockPos pos = blockSel.Position;
                 Block block = world.GetBlock(CodeWithParts(NextStageCodePart));
                 world.BlockAccessor.ExchangeBlock(block.BlockId, pos);
                 world.BlockAccessor.MarkBlockDirty(pos);
                 if (block.Sounds != null) world.PlaySoundAt(block.Sounds.Place, pos.X, pos.Y, pos.Z, byPlayer);
-                if (byPlayer != null && byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
+                if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
                 {
-                    byPlayer.InventoryManager.ActiveHotbarSlot.TakeOut(8);
+                    hotbarSlot.TakeOut(8);
+                    hotbarSlot.MarkDirty();
                 }
                 return true;
             }
 
-            return false;
+            return base.OnBlockInteractStart(world, byPlayer, blockSel);
         }
-
     }
 }

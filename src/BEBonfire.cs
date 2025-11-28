@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace Bonfires
@@ -17,84 +12,76 @@ namespace Bonfires
     {
         public double BurningUntilTotalHours;
         public float BurnTimeHours = 16;
-        Block fireBlock;
-        public string startedByPlayerUid;
-        ILoadedSound ambientSound;
-        long listener;
+        private Block _fireBlock = null!;
+        public string StartedByPlayerUid = null!;
+        private ILoadedSound? _ambientSound;
+        private long _listener;
 
-        static Cuboidf fireCuboid = new Cuboidf(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
+        private static readonly Cuboidf FireCuboid = new(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
 
-        public bool Burning
-        {
-            get
-            {
-                return Block.LastCodePart().Equals("lit");
-            }
-        }
+        public bool Burning => Block.LastCodePart().Equals("lit");
 
         public override void Initialize(ICoreAPI api)
         {
             base.Initialize(api);
-            fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
-            if (fireBlock == null)
+            _fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
+            if (_fireBlock == null)
             {
                 // FIX: Added a warning log to notify if the 'fire' block is missing,
                 // which could cause issues with fire damage.
                 Api.World.Logger.Warning("Bonfires mod could not find block with code 'fire'. Bonfire block damage will not work correctly.");
-                fireBlock = new Block();
+                _fireBlock = new Block();
             }
 
             if (Burning)
             {
-                initSoundsAndTicking();
+                InitSoundsAndTicking();
             }
         }
 
-        private void initSoundsAndTicking()
+        private void InitSoundsAndTicking()
         {
-            listener = RegisterGameTickListener(OnceASecond, 1000);
-            if (ambientSound == null && Api.Side == EnumAppSide.Client)
+            _listener = RegisterGameTickListener(OnceASecond, 1000);
+            if (_ambientSound == null && Api.Side == EnumAppSide.Client)
             {
-                ambientSound = ((IClientWorldAccessor)Api.World).LoadSound(new SoundParams()
+                _ambientSound = ((IClientWorldAccessor)Api.World).LoadSound(new SoundParams
                 {
-                    Location = new AssetLocation("bonfires:sounds/bonfire.ogg"),
+                    Location = new AssetLocation("bonfires-return:sounds/bonfire.ogg"),
                     ShouldLoop = true,
                     Position = Pos.ToVec3f().Add(0.5f, 0.25f, 0.5f),
                     DisposeOnFinish = false,
                     Volume = 2f
                 });
 
-                if (ambientSound != null)
+                if (_ambientSound != null)
                 {
-                    ambientSound.PlaybackPosition = ambientSound.SoundLengthSeconds * (float)Api.World.Rand.NextDouble();
-                    ambientSound.Start();
+                    _ambientSound.PlaybackPosition = _ambientSound.SoundLengthSeconds * (float)Api.World.Rand.NextDouble();
+                    _ambientSound.Start();
                 }
             }
         }
 
         private void OnceASecond(float dt)
         {
-            //System.Console.WriteLine("sec");
             if (Api is ICoreClientAPI)
             {
                 if (!Burning)
                 {
-                    ambientSound?.FadeOutAndStop(1);
+                    _ambientSound?.FadeOutAndStop(1);
                 }
                 return;
             }
             if (Burning)
             {
-                Entity[] entities = Api.World.GetEntitiesAround(Pos.ToVec3d().Add(0.5, 0.5, 0.5), 3, 3, (e) => true);
+                Entity[] entities = Api.World.GetEntitiesAround(Pos.ToVec3d().Add(0.5, 0.5, 0.5), 3, 3, _ => true);
                 Vec3d ownPos = Pos.ToVec3d();
-                for (int i = 0; i < entities.Length; i++)
+                foreach (Entity entity in entities)
                 {
-                    Entity entity = entities[i];
-                    if (!CollisionTester.AabbIntersect(entity.CollisionBox, entity.ServerPos.X, entity.ServerPos.Y, entity.ServerPos.Z, fireCuboid, ownPos)) continue;
+                    if (!CollisionTester.AabbIntersect(entity.CollisionBox, entity.ServerPos.X, entity.ServerPos.Y, entity.ServerPos.Z, FireCuboid, ownPos)) continue;
 
                     if (entity.Alive)
                     {
-                        entity.ReceiveDamage(new DamageSource() { Source = EnumDamageSource.Block, SourceBlock = fireBlock, SourcePos = ownPos, Type = EnumDamageType.Fire }, 2f);
+                        entity.ReceiveDamage(new DamageSource { Source = EnumDamageSource.Block, SourceBlock = _fireBlock, SourcePos = ownPos, Type = EnumDamageType.Fire }, 2f);
                     }
 
                     if (Api.World.Rand.NextDouble() < 0.125)
@@ -105,46 +92,43 @@ namespace Bonfires
 
                 if (Api.World.BlockAccessor.GetBlock(Pos).LiquidCode == "water")
                 {
-                    killFire();
+                    KillFire();
                     return;
                 }
                 if (((ICoreServerAPI)Api).Server.Config.AllowFireSpread && 0.2 > Api.World.Rand.NextDouble())
                 {
                     TrySpreadFireAllDirs();
                 }
-                //System.Console.WriteLine(Api.World.Calendar.TotalHours + " vs " +  BurningUntilTotalHours);
                 if (Api.World.Calendar.TotalHours >= BurningUntilTotalHours)
                 {
-                    killFire();
+                    KillFire();
                     // See if we want to crack the blocks around us.
                     foreach (BlockFacing facing in BlockFacing.ALLFACES)
                     {
                         BlockPos npos = Pos.AddCopy(facing);
                         Block belowBlock = Api.World.BlockAccessor.GetBlock(npos);
-                        AssetLocation cracked = null;
+                        AssetLocation? cracked = null;
                         if (belowBlock.FirstCodePart().Equals("ore"))
                         {
                             cracked = belowBlock.CodeWithPart("cracked_ore");
-                            cracked.Domain = "bonfires";
+                            cracked.Domain = "bonfires-return";
                         }
                         else if (belowBlock.FirstCodePart().Equals("rock"))
                         {
                             cracked = belowBlock.CodeWithPart("cracked_rock");
-                            cracked.Domain = "bonfires";
+                            cracked.Domain = "bonfires-return";
                         }
                         if (cracked != null && cracked.Valid)
                         {
-                            //System.Console.WriteLine("adj block is " + belowBlock.Code.ToString() + " becomes " + cracked);
                             Block crackedBlock = Api.World.GetBlock(cracked);
                             Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
                         }
                     }
-                    
                 }
             }
         }
 
-        public void setBlockState(string state)
+        public void SetBlockState(string state)
         {
             AssetLocation loc = Block.CodeWithVariant("burnstate", state);
             Block block = Api.World.GetBlock(loc);
@@ -154,19 +138,19 @@ namespace Bonfires
             this.Block = block;
         }
 
-        public void ignite(string playerUid)
+        public void Ignite(string playerUid)
         {
-            startedByPlayerUid = playerUid;
+            StartedByPlayerUid = playerUid;
             BurningUntilTotalHours = Api.World.Calendar.TotalHours + BurnTimeHours;
-            setBlockState("lit");
+            SetBlockState("lit");
             MarkDirty(true);
-            initSoundsAndTicking();
+            InitSoundsAndTicking();
         }
 
-        public void killFire()
+        public void KillFire()
         {
-            setBlockState("extinct");
-            UnregisterGameTickListener(listener);
+            SetBlockState("extinct");
+            UnregisterGameTickListener(_listener);
         }
 
         public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
@@ -174,7 +158,7 @@ namespace Bonfires
             return Burning ? 30 : 1;
         }
 
-        protected void TrySpreadFireAllDirs()
+        private void TrySpreadFireAllDirs()
         {
             foreach (BlockFacing facing in BlockFacing.ALLFACES)
             {
@@ -190,61 +174,56 @@ namespace Bonfires
 
         public bool TrySpreadTo(BlockPos pos)
         {
-            // 1. Replaceable test
             var block = Api.World.BlockAccessor.GetBlock(pos);
             if (block.Replaceable < 6000) return false;
 
             BlockEntity be = Api.World.BlockAccessor.GetBlockEntity(pos);
             if (be?.GetBehavior<BEBehaviorBurning>() != null) return false;
 
-            // 2. fuel test
             bool hasFuel = false;
-            BlockPos npos = null;
             foreach (BlockFacing firefacing in BlockFacing.ALLFACES)
             {
-                npos = pos.AddCopy(firefacing);
-                block = Api.World.BlockAccessor.GetBlock(npos);
-                if (canBurn(npos) && Api.World.BlockAccessor.GetBlockEntity(npos)?.GetBehavior<BEBehaviorBurning>() == null) {
-                    hasFuel = true; 
-                    break; 
+                var npos = pos.AddCopy(firefacing);
+                if (CanBurn(npos) && Api.World.BlockAccessor.GetBlockEntity(npos)?.GetBehavior<BEBehaviorBurning>() == null)
+                {
+                    hasFuel = true;
+                    break;
                 }
             }
             if (!hasFuel) return false;
 
-            // 3. Land claim test
-            IPlayer player = Api.World.PlayerByUid(startedByPlayerUid);            
-            if (player != null && Api.World.Claims.TestAccess(player, pos, EnumBlockAccessFlags.BuildOrBreak) != EnumWorldAccessResponse.Granted) {
+            IPlayer? player = Api.World.PlayerByUid(StartedByPlayerUid);
+            if (player != null && Api.World.Claims.TestAccess(player, pos, EnumBlockAccessFlags.BuildOrBreak) != EnumWorldAccessResponse.Granted)
+            {
                 return false;
             }
 
-            Api.World.BlockAccessor.SetBlock(fireBlock.BlockId, pos);
-
-            //Api.World.Logger.Error(string.Format("Fire @{0}: Spread to {1}.", Pos, pos));
+            Api.World.BlockAccessor.SetBlock(_fireBlock.BlockId, pos);
 
             BlockEntity befire = Api.World.BlockAccessor.GetBlockEntity(pos);
-            befire.GetBehavior<BEBehaviorBurning>()?.OnFirePlaced(pos, npos, startedByPlayerUid);
+            befire.GetBehavior<BEBehaviorBurning>()?.OnFirePlaced(pos, null, StartedByPlayerUid);
 
             return true;
         }
 
-        protected bool canBurn(BlockPos pos)
+        private bool CanBurn(BlockPos pos)
         {
-            return 
-                OnCanBurn(pos) 
+            return
+                OnCanBurn(pos)
                 && Api.ModLoader.GetModSystem<ModSystemBlockReinforcement>()?.IsReinforced(pos) != true
             ;
         }
 
-        protected bool OnCanBurn(BlockPos pos)
+        private bool OnCanBurn(BlockPos pos)
         {
             Block block = Api.World.BlockAccessor.GetBlock(pos);
-            return block?.CombustibleProps != null && block.CombustibleProps.BurnDuration > 0;
+            return block.CombustibleProps is { BurnDuration: > 0 };
         }
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
-            BurningUntilTotalHours = tree.GetDouble("BurningUntilTotalHours", 0);
+            BurningUntilTotalHours = tree.GetDouble("BurningUntilTotalHours");
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
@@ -257,16 +236,12 @@ namespace Bonfires
         {
             base.OnBlockRemoved();
 
-            if (ambientSound != null)
+            if (_ambientSound != null)
             {
-                ambientSound?.Stop();
-                ambientSound?.Dispose();
-                ambientSound = null;
+                _ambientSound.Stop();
+                _ambientSound.Dispose();
+                _ambientSound = null;
             }
         }
-
-        // FIX: Removed the destructor (~BlockEntityBonfire). Its logic is already
-        // handled in OnBlockRemoved(), making it redundant and potentially causing
-        // issues with the garbage collector.
     }
 }
