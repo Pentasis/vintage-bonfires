@@ -76,7 +76,7 @@ namespace Bonfires
                 },
                 new WorldInteraction
                 {
-                    ActionLangCode = "bonfires:blockhelp-bonfire-fuel",
+                    ActionLangCode = "bonfires-return:blockhelp-bonfire-fuel",
                     MouseButton = EnumMouseButton.Right,
                     Itemstacks = fuelStacks.ToArray(),
                     GetMatchingStacks = (wi, bs, _) =>

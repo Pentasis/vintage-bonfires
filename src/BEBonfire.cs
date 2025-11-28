@@ -13,7 +13,7 @@ namespace Bonfires
         public double BurningUntilTotalHours;
         public float BurnTimeHours = 16;
         private Block _fireBlock = null!;
-        public string StartedByPlayerUid = null!;
+        public string startedByPlayerUid = null!;
         private ILoadedSound? _ambientSound;
         private long _listener;
 
@@ -140,7 +140,7 @@ namespace Bonfires
 
         public void Ignite(string playerUid)
         {
-            StartedByPlayerUid = playerUid;
+            startedByPlayerUid = playerUid;
             BurningUntilTotalHours = Api.World.Calendar.TotalHours + BurnTimeHours;
             SetBlockState("lit");
             MarkDirty(true);
@@ -180,19 +180,19 @@ namespace Bonfires
             BlockEntity be = Api.World.BlockAccessor.GetBlockEntity(pos);
             if (be?.GetBehavior<BEBehaviorBurning>() != null) return false;
 
-            bool hasFuel = false;
+            BlockPos? fuelPos = null;
             foreach (BlockFacing firefacing in BlockFacing.ALLFACES)
             {
                 var npos = pos.AddCopy(firefacing);
                 if (CanBurn(npos) && Api.World.BlockAccessor.GetBlockEntity(npos)?.GetBehavior<BEBehaviorBurning>() == null)
                 {
-                    hasFuel = true;
+                    fuelPos = npos;
                     break;
                 }
             }
-            if (!hasFuel) return false;
+            if (fuelPos == null) return false;
 
-            IPlayer? player = Api.World.PlayerByUid(StartedByPlayerUid);
+            IPlayer? player = Api.World.PlayerByUid(startedByPlayerUid);
             if (player != null && Api.World.Claims.TestAccess(player, pos, EnumBlockAccessFlags.BuildOrBreak) != EnumWorldAccessResponse.Granted)
             {
                 return false;
@@ -201,7 +201,7 @@ namespace Bonfires
             Api.World.BlockAccessor.SetBlock(_fireBlock.BlockId, pos);
 
             BlockEntity befire = Api.World.BlockAccessor.GetBlockEntity(pos);
-            befire.GetBehavior<BEBehaviorBurning>()?.OnFirePlaced(pos, null, StartedByPlayerUid);
+            befire.GetBehavior<BEBehaviorBurning>()?.OnFirePlaced(pos, fuelPos, startedByPlayerUid);
 
             return true;
         }
