@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -25,7 +26,7 @@ namespace Bonfires
         private static readonly Cuboidf FireCuboid = new(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
 
         public bool Burning => Block.LastCodePart().Equals("lit");
-        public int TotalFuel => _secondsPerFuelItem > 0 ? (int)(_remainingBurnSeconds / _secondsPerFuelItem) : 0;
+        public int TotalFuel => _secondsPerFuelItem > 0 ? (int)Math.Ceiling(_remainingBurnSeconds / _secondsPerFuelItem) : 0;
 
         public override void Initialize(ICoreAPI api)
         {
