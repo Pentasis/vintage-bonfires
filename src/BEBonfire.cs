@@ -12,7 +12,7 @@ namespace Bonfires
     {
         public double BurningUntilTotalHours;
         public float BurnTimeHours = 16;
-        private Block _fireBlock = null!;
+        private Block? _fireBlock;
         public string startedByPlayerUid = null!;
         private ILoadedSound? _ambientSound;
         private long _listener;
@@ -27,10 +27,8 @@ namespace Bonfires
             _fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
             if (_fireBlock == null)
             {
-                // FIX: Added a warning log to notify if the 'fire' block is missing,
-                // which could cause issues with fire damage.
-                Api.World.Logger.Warning("Bonfires mod could not find block with code 'fire'. Bonfire block damage will not work correctly.");
-                _fireBlock = new Block();
+                // FIX: If the fire block is missing, log a warning and disable fire spread.
+                Api.World.Logger.Warning("Bonfires mod could not find block with code 'fire'. Fire spreading from bonfires will be disabled.");
             }
 
             if (Burning)
@@ -174,6 +172,9 @@ namespace Bonfires
 
         public bool TrySpreadTo(BlockPos pos)
         {
+            // FIX: If the fire block asset is missing, don't attempt to spread fire.
+            if (_fireBlock == null) return false;
+
             var block = Api.World.BlockAccessor.GetBlock(pos);
             if (block.Replaceable < 6000) return false;
 
@@ -200,8 +201,11 @@ namespace Bonfires
 
             Api.World.BlockAccessor.SetBlock(_fireBlock.BlockId, pos);
 
-            BlockEntity befire = Api.World.BlockAccessor.GetBlockEntity(pos);
-            befire.GetBehavior<BEBehaviorBurning>()?.OnFirePlaced(pos, fuelPos, startedByPlayerUid);
+            BlockEntity? befire = Api.World.BlockAccessor.GetBlockEntity(pos);
+            if (befire != null)
+            {
+                befire.GetBehavior<BEBehaviorBurning>()?.OnFirePlaced(pos, fuelPos, startedByPlayerUid);
+            }
 
             return true;
         }
