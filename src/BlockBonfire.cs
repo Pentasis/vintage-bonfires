@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
@@ -82,7 +83,7 @@ namespace Bonfires
                     GetMatchingStacks = (wi, bs, _) =>
                     {
                         var bf = coreApi.World.BlockAccessor.GetBlock(bs.Position);
-                        return bf.LastCodePart().StartsWith("construct") ? wi.Itemstacks : null;
+                        return bf.LastCodePart().StartsWith("construct") || bf.LastCodePart().Equals("cold") ? wi.Itemstacks : null;
                     }
                 }
             };
@@ -129,19 +130,40 @@ namespace Bonfires
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
             var hotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
-            if (Stage < 4 && hotbarSlot?.Itemstack?.Collectible.Code.Path == "firewood" && hotbarSlot.StackSize >= 8)
+            if (hotbarSlot?.Itemstack?.Collectible.Code.Path != "firewood") 
+                return base.OnBlockInteractStart(world, byPlayer, blockSel);
+            
+            if (Stage < 4)
             {
-                BlockPos pos = blockSel.Position;
-                Block block = world.GetBlock(CodeWithParts(NextStageCodePart));
-                world.BlockAccessor.ExchangeBlock(block.BlockId, pos);
-                world.BlockAccessor.MarkBlockDirty(pos);
-                if (block.Sounds != null) world.PlaySoundAt(block.Sounds.Place, pos.X, pos.Y, pos.Z, byPlayer);
-                if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
+                if (hotbarSlot.StackSize >= 8)
                 {
-                    hotbarSlot.TakeOut(8);
-                    hotbarSlot.MarkDirty();
+                    BlockPos pos = blockSel.Position;
+                    Block block = world.GetBlock(CodeWithParts(NextStageCodePart));
+                    world.BlockAccessor.ExchangeBlock(block.BlockId, pos);
+                    world.BlockAccessor.MarkBlockDirty(pos);
+                    if (block.Sounds != null) world.PlaySoundAt(block.Sounds.Place, pos.X, pos.Y, pos.Z, byPlayer);
+                    if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
+                    {
+                        hotbarSlot.TakeOut(8);
+                        hotbarSlot.MarkDirty();
+                    }
+                    return true;
                 }
-                return true;
+            }
+            else
+            {
+                if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityBonfire bef)
+                {
+                    if (bef.Refuel(1))
+                    {
+                        if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
+                        {
+                            hotbarSlot.TakeOut(1);
+                            hotbarSlot.MarkDirty();
+                        }
+                        return true;
+                    }
+                }
             }
 
             return base.OnBlockInteractStart(world, byPlayer, blockSel);

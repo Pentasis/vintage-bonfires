@@ -1,6 +1,8 @@
+using System.Text;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
@@ -16,6 +18,9 @@ namespace Bonfires
         public string startedByPlayerUid = null!;
         private ILoadedSound? _ambientSound;
         private long _listener;
+        
+        public int TotalFuel;
+        public int MaxFuel = 32;
 
         private static readonly Cuboidf FireCuboid = new(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
 
@@ -139,7 +144,7 @@ namespace Bonfires
         public void Ignite(string playerUid)
         {
             startedByPlayerUid = playerUid;
-            BurningUntilTotalHours = Api.World.Calendar.TotalHours + BurnTimeHours;
+            BurningUntilTotalHours = Api.World.Calendar.TotalHours + (BurnTimeHours * TotalFuel);
             SetBlockState("lit");
             MarkDirty(true);
             InitSoundsAndTicking();
@@ -228,12 +233,14 @@ namespace Bonfires
         {
             base.FromTreeAttributes(tree, worldForResolving);
             BurningUntilTotalHours = tree.GetDouble("BurningUntilTotalHours");
+            TotalFuel = tree.GetInt("TotalFuel");
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
             tree.SetDouble("BurningUntilTotalHours", BurningUntilTotalHours);
+            tree.SetInt("TotalFuel", TotalFuel);
         }
 
         public override void OnBlockRemoved()
@@ -246,6 +253,20 @@ namespace Bonfires
                 _ambientSound.Dispose();
                 _ambientSound = null;
             }
+        }
+        
+        public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
+        {
+            base.GetBlockInfo(forPlayer, dsc);
+            dsc.AppendLine(Lang.Get("bonfires-return:bonfire-fuel", TotalFuel, MaxFuel));
+        }
+
+        public bool Refuel(int amount)
+        {
+            if (TotalFuel >= MaxFuel) return false;
+            TotalFuel = System.Math.Min(MaxFuel, TotalFuel + amount);
+            MarkDirty(true);
+            return true;
         }
     }
 }
