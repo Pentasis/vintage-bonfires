@@ -12,33 +12,36 @@ namespace Bonfires
 {
     public class BlockEntityBonfire : BlockEntity, IHeatSource
     {
-        private float _remainingBurnTime;
-        private float _secondsPerFuelItem;
-        
+        private double _lastTickTotalHours;
+        private float _remainingBurnHours;
+        private float _hoursPerFuelItem;
+
         private Block? _fireBlock;
         public string startedByPlayerUid = null!;
         private ILoadedSound? _ambientSound;
         private long _listener;
-        
+
         public int MaxFuel = 32;
 
         private static readonly Cuboidf FireCuboid = new(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
 
         public bool Burning => Block.LastCodePart().Equals("lit");
-        public int TotalFuel => (int)(_remainingBurnTime / _secondsPerFuelItem);
+        public int TotalFuel => (int)(_remainingBurnHours / _hoursPerFuelItem);
 
         public override void Initialize(ICoreAPI api)
         {
             base.Initialize(api);
-            
+
             var firewood = Api.World.GetItem(new AssetLocation("firewood"));
             if (firewood?.CombustibleProps != null)
             {
-                _secondsPerFuelItem = firewood.CombustibleProps.BurnDuration * 4;
+                // Convert seconds to hours for the calculation
+                _hoursPerFuelItem = (firewood.CombustibleProps.BurnDuration * 4) / (Api.World.Calendar.HoursPerDay * 60 * 60);
             }
             else
             {
-                _secondsPerFuelItem = 24 * 4; 
+                // Fallback: 24 seconds * 4, converted to hours
+                _hoursPerFuelItem = (24 * 4) / (Api.World.Calendar.HoursPerDay * 60 * 60);
             }
 
             _fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
@@ -77,7 +80,7 @@ namespace Bonfires
 
         private void OnceASecond(float dt)
         {
-            if (Api is ICoreClientAPI)
+            if (Api.Side == EnumAppSide.Client)
             {
                 if (!Burning)
                 {
@@ -85,16 +88,24 @@ namespace Bonfires
                 }
                 return;
             }
-            
+
             if (Burning)
             {
-                _remainingBurnTime -= dt;
-                
-                if (_remainingBurnTime <= 0)
+                int oldFuel = TotalFuel;
+                double hoursPassed = Api.World.Calendar.TotalHours - _lastTickTotalHours;
+                _lastTickTotalHours = Api.World.Calendar.TotalHours;
+                _remainingBurnHours -= (float)hoursPassed;
+
+                if (oldFuel != TotalFuel)
                 {
-                    _remainingBurnTime = 0;
+                    MarkDirty(true);
+                }
+
+                if (_remainingBurnHours <= 0)
+                {
+                    _remainingBurnHours = 0;
                     KillFire();
-                    
+
                     foreach (BlockFacing facing in BlockFacing.ALLFACES)
                     {
                         BlockPos npos = Pos.AddCopy(facing);
@@ -118,9 +129,9 @@ namespace Bonfires
                             Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
                         }
                     }
-                    return; 
+                    return;
                 }
-                
+
                 Entity[] entities = Api.World.GetEntitiesAround(Pos.ToVec3d().Add(0.5, 0.5, 0.5), 3, 3, _ => true);
                 Vec3d ownPos = Pos.ToVec3d();
                 foreach (Entity entity in entities)
@@ -143,7 +154,7 @@ namespace Bonfires
                     KillFire();
                     return;
                 }
-                
+
                 if (((ICoreServerAPI)Api).Server.Config.AllowFireSpread && 0.2 > Api.World.Rand.NextDouble())
                 {
                     TrySpreadFireAllDirs();
@@ -155,7 +166,7 @@ namespace Bonfires
         {
             AssetLocation loc = Block.CodeWithVariant("burnstate", state);
             Block block = Api.World.GetBlock(loc);
-            if (block == null) return;
+if (block == null) return;
 
             Api.World.BlockAccessor.ExchangeBlock(block.Id, Pos);
             this.Block = block;
@@ -163,9 +174,10 @@ namespace Bonfires
 
         public void Ignite(string playerUid)
         {
-            if (_remainingBurnTime <= 0) return;
-            
+            if (TotalFuel <= 0) return;
+
             startedByPlayerUid = playerUid;
+            _lastTickTotalHours = Api.World.Calendar.TotalHours;
             SetBlockState("lit");
             MarkDirty(true);
             InitSoundsAndTicking();
@@ -252,13 +264,15 @@ namespace Bonfires
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
-            _remainingBurnTime = tree.GetFloat("remainingBurnTime");
+            _remainingBurnHours = tree.GetFloat("remainingBurnHours");
+            _lastTickTotalHours = tree.GetDouble("lastTickTotalHours");
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
-            tree.SetFloat("remainingBurnTime", _remainingBurnTime);
+            tree.SetFloat("remainingBurnHours", _remainingBurnHours);
+            tree.SetDouble("lastTickTotalHours", _lastTickTotalHours);
         }
 
         public override void OnBlockRemoved()
@@ -272,7 +286,7 @@ namespace Bonfires
                 _ambientSound = null;
             }
         }
-        
+
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
@@ -282,13 +296,13 @@ namespace Bonfires
         public bool Refuel(int amount)
         {
             if (TotalFuel >= MaxFuel) return false;
-            
-            _remainingBurnTime += amount * _secondsPerFuelItem;
+
+            _remainingBurnHours += amount * _hoursPerFuelItem;
             if (TotalFuel > MaxFuel)
             {
-                _remainingBurnTime = MaxFuel * _secondsPerFuelItem;
+                _remainingBurnHours = MaxFuel * _hoursPerFuelItem;
             }
-            
+
             MarkDirty(true);
             return true;
         }
