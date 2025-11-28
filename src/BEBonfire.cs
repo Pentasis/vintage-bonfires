@@ -13,7 +13,7 @@ namespace Bonfires
     public class BlockEntityBonfire : BlockEntity, IHeatSource
     {
         private double _lastFuelCheckTotalHours;
-        public float HoursPerFuelItem = 1f;
+        private float _secondsPerFuelItem;
         
         private Block? _fireBlock;
         public string startedByPlayerUid = null!;
@@ -30,6 +30,19 @@ namespace Bonfires
         public override void Initialize(ICoreAPI api)
         {
             base.Initialize(api);
+            
+            // Get burn time from firewood properties
+            var firewood = Api.World.GetItem(new AssetLocation("firewood"));
+            if (firewood?.CombustibleProps != null)
+            {
+                _secondsPerFuelItem = firewood.CombustibleProps.BurnDuration * 4;
+            }
+            else
+            {
+                // Fallback if firewood properties are not found
+                _secondsPerFuelItem = 24 * 4; 
+            }
+
             _fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
             if (_fireBlock == null)
             {
@@ -78,13 +91,13 @@ namespace Bonfires
             if (Burning)
             {
                 // Fuel consumption logic
-                double elapsedHours = Api.World.Calendar.TotalHours - _lastFuelCheckTotalHours;
-                int fuelToConsume = (int)(elapsedHours / HoursPerFuelItem);
+                double elapsedSeconds = (Api.World.Calendar.TotalHours - _lastFuelCheckTotalHours) * Api.World.Calendar.HoursPerDay * 60 * 60;
+                int fuelToConsume = (int)(elapsedSeconds / _secondsPerFuelItem);
 
                 if (fuelToConsume > 0)
                 {
                     TotalFuel -= fuelToConsume;
-                    _lastFuelCheckTotalHours += fuelToConsume * HoursPerFuelItem;
+                    _lastFuelCheckTotalHours += fuelToConsume * (_secondsPerFuelItem / (Api.World.Calendar.HoursPerDay * 60 * 60));
                     MarkDirty(true);
 
                     if (TotalFuel <= 0)
