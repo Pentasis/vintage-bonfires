@@ -36,7 +36,13 @@ namespace Bonfires
         {
             base.Initialize(api);
             fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
-            if (fireBlock == null) fireBlock = new Block();
+            if (fireBlock == null)
+            {
+                // FIX: Added a warning log to notify if the 'fire' block is missing,
+                // which could cause issues with fire damage.
+                Api.World.Logger.Warning("Bonfires mod could not find block with code 'fire'. Bonfire block damage will not work correctly.");
+                fireBlock = new Block();
+            }
 
             if (Burning)
             {
@@ -259,12 +265,8 @@ namespace Bonfires
             }
         }
 
-        ~BlockEntityBonfire()
-        {
-            if (ambientSound != null)
-            {
-                ambientSound?.Dispose();
-            }
-        }
+        // FIX: Removed the destructor (~BlockEntityBonfire). Its logic is already
+        // handled in OnBlockRemoved(), making it redundant and potentially causing
+        // issues with the garbage collector.
     }
 }
