@@ -12,8 +12,9 @@ namespace Bonfires
 {
     public class BlockEntityBonfire : BlockEntity, IHeatSource
     {
-        public double BurningUntilTotalHours;
-        public float BurnTimeHours = 16;
+        private double _lastFuelCheckTotalHours;
+        public float HoursPerFuelItem = 1f;
+        
         private Block? _fireBlock;
         public string startedByPlayerUid = null!;
         private ILoadedSound? _ambientSound;
@@ -32,7 +33,6 @@ namespace Bonfires
             _fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
             if (_fireBlock == null)
             {
-                // FIX: If the fire block is missing, log a warning and disable fire spread.
                 Api.World.Logger.Warning("Bonfires mod could not find block with code 'fire'. Fire spreading from bonfires will be disabled.");
             }
 
@@ -74,8 +74,50 @@ namespace Bonfires
                 }
                 return;
             }
+            
             if (Burning)
             {
+                // Fuel consumption logic
+                double elapsedHours = Api.World.Calendar.TotalHours - _lastFuelCheckTotalHours;
+                int fuelToConsume = (int)(elapsedHours / HoursPerFuelItem);
+
+                if (fuelToConsume > 0)
+                {
+                    TotalFuel -= fuelToConsume;
+                    _lastFuelCheckTotalHours += fuelToConsume * HoursPerFuelItem;
+                    MarkDirty(true);
+
+                    if (TotalFuel <= 0)
+                    {
+                        TotalFuel = 0;
+                        KillFire();
+                        // Crack ore/rock logic is now here
+                        foreach (BlockFacing facing in BlockFacing.ALLFACES)
+                        {
+                            BlockPos npos = Pos.AddCopy(facing);
+                            Block belowBlock = Api.World.BlockAccessor.GetBlock(npos);
+                            AssetLocation? cracked = null;
+                            if (belowBlock.FirstCodePart().Equals("ore"))
+                            {
+                                cracked = belowBlock.CodeWithPart("cracked_ore");
+                                cracked.Domain = "bonfires-return";
+                            }
+                            else if (belowBlock.FirstCodePart().Equals("rock"))
+                            {
+                                cracked = belowBlock.CodeWithPart("cracked_rock");
+                                cracked.Domain = "bonfires-return";
+                            }
+                            if (cracked != null && cracked.Valid)
+                            {
+                                Block crackedBlock = Api.World.GetBlock(cracked);
+                                Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
+                            }
+                        }
+                        return; // Fire is out, stop processing
+                    }
+                }
+                
+                // Damage and ignite entities
                 Entity[] entities = Api.World.GetEntitiesAround(Pos.ToVec3d().Add(0.5, 0.5, 0.5), 3, 3, _ => true);
                 Vec3d ownPos = Pos.ToVec3d();
                 foreach (Entity entity in entities)
@@ -98,35 +140,10 @@ namespace Bonfires
                     KillFire();
                     return;
                 }
+                
                 if (((ICoreServerAPI)Api).Server.Config.AllowFireSpread && 0.2 > Api.World.Rand.NextDouble())
                 {
                     TrySpreadFireAllDirs();
-                }
-                if (Api.World.Calendar.TotalHours >= BurningUntilTotalHours)
-                {
-                    KillFire();
-                    // See if we want to crack the blocks around us.
-                    foreach (BlockFacing facing in BlockFacing.ALLFACES)
-                    {
-                        BlockPos npos = Pos.AddCopy(facing);
-                        Block belowBlock = Api.World.BlockAccessor.GetBlock(npos);
-                        AssetLocation? cracked = null;
-                        if (belowBlock.FirstCodePart().Equals("ore"))
-                        {
-                            cracked = belowBlock.CodeWithPart("cracked_ore");
-                            cracked.Domain = "bonfires-return";
-                        }
-                        else if (belowBlock.FirstCodePart().Equals("rock"))
-                        {
-                            cracked = belowBlock.CodeWithPart("cracked_rock");
-                            cracked.Domain = "bonfires-return";
-                        }
-                        if (cracked != null && cracked.Valid)
-                        {
-                            Block crackedBlock = Api.World.GetBlock(cracked);
-                            Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
-                        }
-                    }
                 }
             }
         }
@@ -143,8 +160,10 @@ namespace Bonfires
 
         public void Ignite(string playerUid)
         {
+            if (TotalFuel <= 0) return;
+            
             startedByPlayerUid = playerUid;
-            BurningUntilTotalHours = Api.World.Calendar.TotalHours + (BurnTimeHours * TotalFuel);
+            _lastFuelCheckTotalHours = Api.World.Calendar.TotalHours;
             SetBlockState("lit");
             MarkDirty(true);
             InitSoundsAndTicking();
@@ -177,7 +196,6 @@ namespace Bonfires
 
         public bool TrySpreadTo(BlockPos pos)
         {
-            // FIX: If the fire block asset is missing, don't attempt to spread fire.
             if (_fireBlock == null) return false;
 
             var block = Api.World.BlockAccessor.GetBlock(pos);
@@ -232,14 +250,14 @@ namespace Bonfires
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
-            BurningUntilTotalHours = tree.GetDouble("BurningUntilTotalHours");
+            _lastFuelCheckTotalHours = tree.GetDouble("lastFuelCheckTotalHours");
             TotalFuel = tree.GetInt("TotalFuel");
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
-            tree.SetDouble("BurningUntilTotalHours", BurningUntilTotalHours);
+            tree.SetDouble("lastFuelCheckTotalHours", _lastFuelCheckTotalHours);
             tree.SetInt("TotalFuel", TotalFuel);
         }
 
