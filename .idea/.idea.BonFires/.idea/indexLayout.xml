@@ -3,6 +3,9 @@
   <component name="UserContentModel">
     <attachedFolders />
     <explicitIncludes />
-    <explicitExcludes />
+    <explicitExcludes>
+      <Path>nightwatch</Path>
+      <Path>vssurvivalmod-master</Path>
+    </explicitExcludes>
   </component>
 </project>

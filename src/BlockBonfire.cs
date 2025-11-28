@@ -7,7 +7,7 @@ using Vintagestory.GameContent;
 
 namespace Bonfires
 {
-    public class BlockBonfire : Block
+    public class BlockBonfire : Block, IIgnitable
     {
         private WorldInteraction[] _interactions = System.Array.Empty<WorldInteraction>();
 
@@ -93,7 +93,7 @@ namespace Bonfires
             return _interactions.Append(base.GetPlacedBlockInteractionHelp(world, selection, forPlayer));
         }
 
-        public override EnumIgniteState OnTryIgnite(IPlayer byPlayer, BlockPos pos, float secondsIgniting, ref EnumHandling handling)
+        public EnumIgniteState OnTryIgniteBlock(EntityAgent byEntity, BlockPos pos, float secondsIgniting)
         {
             if (api.World.BlockAccessor.GetBlockEntity(pos) is BlockEntityBonfire { Burning: true })
             {
@@ -103,13 +103,26 @@ namespace Bonfires
             return secondsIgniting > 3 ? EnumIgniteState.IgniteNow : EnumIgniteState.Ignitable;
         }
 
-        public override void OnIgnited(IPlayer byPlayer, BlockPos pos, ref EnumHandling handling)
+        public void OnTryIgniteBlockOver(EntityAgent byEntity, BlockPos pos, float secondsIgniting, ref EnumHandling handling)
         {
             if (api.World.BlockAccessor.GetBlockEntity(pos) is BlockEntityBonfire bef && !bef.Burning)
             {
-                bef.Ignite(byPlayer.PlayerUID);
+                if (byEntity is EntityPlayer player)
+                {
+                    bef.Ignite(player.PlayerUID);
+                }
             }
             handling = EnumHandling.PreventDefault;
+        }
+
+        public EnumIgniteState OnTryIgniteStack(EntityAgent byEntity, BlockPos pos, ItemSlot slot, float secondsIgniting)
+        {
+            if (api.World.BlockAccessor.GetBlockEntity(pos) is BlockEntityBonfire { Burning: true })
+            {
+                return EnumIgniteState.NotIgnitablePreventDefault;
+            }
+
+            return secondsIgniting > 3 ? EnumIgniteState.IgniteNow : EnumIgniteState.Ignitable;
         }
 
 

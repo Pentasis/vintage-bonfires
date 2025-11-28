@@ -32,7 +32,6 @@
 
     <ItemGroup>
       <Folder Include="assets\" />
-      <Folder Include="old\assets\" />
     </ItemGroup>
 
 </Project>
