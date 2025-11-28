@@ -12,9 +12,8 @@ namespace Bonfires
 {
     public class BlockEntityBonfire : BlockEntity, IHeatSource
     {
-        private double _lastTickTotalHours;
-        private float _remainingBurnHours;
-        private float _hoursPerFuelItem;
+        private float _remainingBurnSeconds;
+        private float _secondsPerFuelItem;
 
         private Block? _fireBlock;
         public string startedByPlayerUid = null!;
@@ -26,7 +25,7 @@ namespace Bonfires
         private static readonly Cuboidf FireCuboid = new(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
 
         public bool Burning => Block.LastCodePart().Equals("lit");
-        public int TotalFuel => (int)(_remainingBurnHours / _hoursPerFuelItem);
+        public int TotalFuel => _secondsPerFuelItem > 0 ? (int)(_remainingBurnSeconds / _secondsPerFuelItem) : 0;
 
         public override void Initialize(ICoreAPI api)
         {
@@ -35,13 +34,12 @@ namespace Bonfires
             var firewood = Api.World.GetItem(new AssetLocation("firewood"));
             if (firewood?.CombustibleProps != null)
             {
-                // Convert seconds to hours for the calculation
-                _hoursPerFuelItem = (firewood.CombustibleProps.BurnDuration * 4) / (Api.World.Calendar.HoursPerDay * 60 * 60);
+                _secondsPerFuelItem = firewood.CombustibleProps.BurnDuration * 4;
             }
             else
             {
-                // Fallback: 24 seconds * 4, converted to hours
-                _hoursPerFuelItem = (24 * 4) / (Api.World.Calendar.HoursPerDay * 60 * 60);
+                // Fallback: 24 seconds * 4
+                _secondsPerFuelItem = 24 * 4;
             }
 
             _fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
@@ -92,18 +90,16 @@ namespace Bonfires
             if (Burning)
             {
                 int oldFuel = TotalFuel;
-                double hoursPassed = Api.World.Calendar.TotalHours - _lastTickTotalHours;
-                _lastTickTotalHours = Api.World.Calendar.TotalHours;
-                _remainingBurnHours -= (float)hoursPassed;
+                _remainingBurnSeconds -= dt;
 
                 if (oldFuel != TotalFuel)
                 {
                     MarkDirty(true);
                 }
 
-                if (_remainingBurnHours <= 0)
+                if (_remainingBurnSeconds <= 0)
                 {
-                    _remainingBurnHours = 0;
+                    _remainingBurnSeconds = 0;
                     KillFire();
 
                     foreach (BlockFacing facing in BlockFacing.ALLFACES)
@@ -166,7 +162,7 @@ namespace Bonfires
         {
             AssetLocation loc = Block.CodeWithVariant("burnstate", state);
             Block block = Api.World.GetBlock(loc);
-if (block == null) return;
+            if (block == null) return;
 
             Api.World.BlockAccessor.ExchangeBlock(block.Id, Pos);
             this.Block = block;
@@ -177,7 +173,6 @@ if (block == null) return;
             if (TotalFuel <= 0) return;
 
             startedByPlayerUid = playerUid;
-            _lastTickTotalHours = Api.World.Calendar.TotalHours;
             SetBlockState("lit");
             MarkDirty(true);
             InitSoundsAndTicking();
@@ -264,15 +259,13 @@ if (block == null) return;
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
-            _remainingBurnHours = tree.GetFloat("remainingBurnHours");
-            _lastTickTotalHours = tree.GetDouble("lastTickTotalHours");
+            _remainingBurnSeconds = tree.GetFloat("remainingBurnSeconds");
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
-            tree.SetFloat("remainingBurnHours", _remainingBurnHours);
-            tree.SetDouble("lastTickTotalHours", _lastTickTotalHours);
+            tree.SetFloat("remainingBurnSeconds", _remainingBurnSeconds);
         }
 
         public override void OnBlockRemoved()
@@ -297,10 +290,10 @@ if (block == null) return;
         {
             if (TotalFuel >= MaxFuel) return false;
 
-            _remainingBurnHours += amount * _hoursPerFuelItem;
+            _remainingBurnSeconds += amount * _secondsPerFuelItem;
             if (TotalFuel > MaxFuel)
             {
-                _remainingBurnHours = MaxFuel * _hoursPerFuelItem;
+                _remainingBurnSeconds = MaxFuel * _secondsPerFuelItem;
             }
 
             MarkDirty(true);
