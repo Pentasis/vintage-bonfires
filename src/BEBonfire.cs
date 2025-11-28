@@ -12,7 +12,7 @@ namespace Bonfires
 {
     public class BlockEntityBonfire : BlockEntity, IHeatSource
     {
-        private double _lastFuelCheckTotalHours;
+        private float _remainingBurnTime;
         private float _secondsPerFuelItem;
         
         private Block? _fireBlock;
@@ -20,18 +20,17 @@ namespace Bonfires
         private ILoadedSound? _ambientSound;
         private long _listener;
         
-        public int TotalFuel;
         public int MaxFuel = 32;
 
         private static readonly Cuboidf FireCuboid = new(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
 
         public bool Burning => Block.LastCodePart().Equals("lit");
+        public int TotalFuel => (int)(_remainingBurnTime / _secondsPerFuelItem);
 
         public override void Initialize(ICoreAPI api)
         {
             base.Initialize(api);
             
-            // Get burn time from firewood properties
             var firewood = Api.World.GetItem(new AssetLocation("firewood"));
             if (firewood?.CombustibleProps != null)
             {
@@ -39,7 +38,6 @@ namespace Bonfires
             }
             else
             {
-                // Fallback if firewood properties are not found
                 _secondsPerFuelItem = 24 * 4; 
             }
 
@@ -90,47 +88,39 @@ namespace Bonfires
             
             if (Burning)
             {
-                // Fuel consumption logic
-                double elapsedSeconds = (Api.World.Calendar.TotalHours - _lastFuelCheckTotalHours) * Api.World.Calendar.HoursPerDay * 60 * 60;
-                int fuelToConsume = (int)(elapsedSeconds / _secondsPerFuelItem);
-
-                if (fuelToConsume > 0)
+                _remainingBurnTime -= dt;
+                
+                if (_remainingBurnTime <= 0)
                 {
-                    TotalFuel -= fuelToConsume;
-                    _lastFuelCheckTotalHours += fuelToConsume * (_secondsPerFuelItem / (Api.World.Calendar.HoursPerDay * 60 * 60));
-                    MarkDirty(true);
-
-                    if (TotalFuel <= 0)
+                    _remainingBurnTime = 0;
+                    KillFire();
+                    
+                    foreach (BlockFacing facing in BlockFacing.ALLFACES)
                     {
-                        TotalFuel = 0;
-                        KillFire();
-                        // Crack ore/rock logic is now here
-                        foreach (BlockFacing facing in BlockFacing.ALLFACES)
+                        BlockPos npos = Pos.AddCopy(facing);
+                        Block? belowBlock = Api.World.BlockAccessor.GetBlock(npos);
+                        if (belowBlock == null) continue;
+
+                        AssetLocation? cracked = null;
+                        if (belowBlock.FirstCodePart().Equals("ore"))
                         {
-                            BlockPos npos = Pos.AddCopy(facing);
-                            Block belowBlock = Api.World.BlockAccessor.GetBlock(npos);
-                            AssetLocation? cracked = null;
-                            if (belowBlock.FirstCodePart().Equals("ore"))
-                            {
-                                cracked = belowBlock.CodeWithPart("cracked_ore");
-                                cracked.Domain = "bonfires-return";
-                            }
-                            else if (belowBlock.FirstCodePart().Equals("rock"))
-                            {
-                                cracked = belowBlock.CodeWithPart("cracked_rock");
-                                cracked.Domain = "bonfires-return";
-                            }
-                            if (cracked != null && cracked.Valid)
-                            {
-                                Block crackedBlock = Api.World.GetBlock(cracked);
-                                Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
-                            }
+                            cracked = belowBlock.CodeWithPart("cracked_ore");
+                            cracked.Domain = "bonfires-return";
                         }
-                        return; // Fire is out, stop processing
+                        else if (belowBlock.FirstCodePart().Equals("rock"))
+                        {
+                            cracked = belowBlock.CodeWithPart("cracked_rock");
+                            cracked.Domain = "bonfires-return";
+                        }
+                        if (cracked != null && cracked.Valid)
+                        {
+                            Block crackedBlock = Api.World.GetBlock(cracked);
+                            Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
+                        }
                     }
+                    return; 
                 }
                 
-                // Damage and ignite entities
                 Entity[] entities = Api.World.GetEntitiesAround(Pos.ToVec3d().Add(0.5, 0.5, 0.5), 3, 3, _ => true);
                 Vec3d ownPos = Pos.ToVec3d();
                 foreach (Entity entity in entities)
@@ -173,10 +163,9 @@ namespace Bonfires
 
         public void Ignite(string playerUid)
         {
-            if (TotalFuel <= 0) return;
+            if (_remainingBurnTime <= 0) return;
             
             startedByPlayerUid = playerUid;
-            _lastFuelCheckTotalHours = Api.World.Calendar.TotalHours;
             SetBlockState("lit");
             MarkDirty(true);
             InitSoundsAndTicking();
@@ -263,15 +252,13 @@ namespace Bonfires
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
-            _lastFuelCheckTotalHours = tree.GetDouble("lastFuelCheckTotalHours");
-            TotalFuel = tree.GetInt("TotalFuel");
+            _remainingBurnTime = tree.GetFloat("remainingBurnTime");
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
-            tree.SetDouble("lastFuelCheckTotalHours", _lastFuelCheckTotalHours);
-            tree.SetInt("TotalFuel", TotalFuel);
+            tree.SetFloat("remainingBurnTime", _remainingBurnTime);
         }
 
         public override void OnBlockRemoved()
@@ -295,7 +282,13 @@ namespace Bonfires
         public bool Refuel(int amount)
         {
             if (TotalFuel >= MaxFuel) return false;
-            TotalFuel = System.Math.Min(MaxFuel, TotalFuel + amount);
+            
+            _remainingBurnTime += amount * _secondsPerFuelItem;
+            if (TotalFuel > MaxFuel)
+            {
+                _remainingBurnTime = MaxFuel * _secondsPerFuelItem;
+            }
+            
             MarkDirty(true);
             return true;
         }
