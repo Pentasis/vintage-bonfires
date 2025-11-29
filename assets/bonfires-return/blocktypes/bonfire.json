@@ -32,12 +32,14 @@
 		"break": "game:block/planks",
 		"walk": "game:walk/wood"
 	},
-	behaviorsByType: {
-		"*-construct*": [ {name: "Unstable"}],
-		"*-extinct": [ {name: "Unstable"}],
-		"*-base": [{name: "Unstable"}, { name: "Ignitable" }],
-		"*-lit": [{name: "Unstable"}, { name: "HeatSource" }],
-	},
+    "behaviorsByType": {
+      "*-construct1": [ { "name": "Unstable" } ],
+      "*-construct2": [ { "name": "Unstable" } ],
+      "*-construct3": [ { "name": "Unstable" }, { "name": "Ignitable" } ],
+      "*-extinct": [ { "name": "Unstable" } ],
+      "*-base": [ { "name": "Unstable" } ],
+      "*-lit": [ { "name": "Unstable" }, { "name": "HeatSource" } ]
+    },
 	lightHsvByType: {
 		"bonfire-extinct": [7, 7, 2],
 		"bonfire-lit": [7, 7, 40],
