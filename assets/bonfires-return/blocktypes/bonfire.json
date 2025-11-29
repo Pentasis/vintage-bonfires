@@ -3,7 +3,7 @@
 	class: "BlockBonfire",
 	entityClass: "BlockEntityBonfire",
 	variantgroups: [
-		{ code:"burnstate", states: ["construct1", "construct2", "construct3", "extinct", "lit", "cold"] }
+		{ code:"burnstate", states: ["construct1", "construct2", "construct3", "extinct", "lit", "base"] }
 	],
 	shape: { base: "bonfire-{burnstate}" },
 	heldTpIdleAnimation: "holdunderarm",
@@ -35,7 +35,7 @@
 	behaviorsByType: {
 		"*-construct*": [ {name: "Unstable"}],
 		"*-extinct": [ {name: "Unstable"}],
-		"*-cold": [{name: "Unstable"}, { name: "Ignitable" }],
+		"*-base": [{name: "Unstable"}, { name: "Ignitable" }],
 		"*-lit": [{name: "Unstable"}, { name: "HeatSource" }],
 	},
 	lightHsvByType: {
@@ -168,7 +168,7 @@
 				quantity: { avg: 16, var: 0 }
 			}
 		],
-		"bonfire-cold": [
+		"bonfire-base": [
 			{
 				type: "item",
 				code: "game:stick",

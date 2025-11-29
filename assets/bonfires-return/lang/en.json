@@ -5,7 +5,7 @@
   "block-bonfire-construct2": "Bonfire (Under Construction)",
   "block-bonfire-construct3": "Bonfire (Under Construction)",
   "block-bonfire-construct4": "Bonfire (Under Construction)",
-  "block-bonfire-cold": "Bonfire",
+  "block-bonfire-base": "Bonfire",
   
   "bonfires-return:blockhelp-bonfire-fuel": "Add fuel",
   "bonfires-return:bonfire-fuel": "Fuel: {0}/{1}",

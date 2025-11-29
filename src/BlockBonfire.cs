@@ -11,38 +11,19 @@ namespace Bonfires
     {
         private WorldInteraction[] _interactions = System.Array.Empty<WorldInteraction>();
 
-        // Stage property now correctly reflects the state of the *block definition*
-        public int Stage
+        // Stage property now returns an EBonfireStage enum for better type safety and readability.
+        public EBonfireStage Stage
         {
             get
             {
                 return LastCodePart() switch
                 {
-                    "construct1" => 1,
-                    "construct2" => 2,
-                    "construct3" => 3,
-                    "cold" => 4, // Fully constructed, ready for fuel
-                    "extinct" => 0, // Burned out, needs to be rebuilt
-                    _ => 0 // Default for unknown states, treat as needing construction
-                };
-            }
-        }
-
-        // NextStageCodePart now correctly reflects the state of the *block definition*
-        // This property will primarily be used for advancing construction stages (0-2)
-        public string NextStageCodePart
-        {
-            get
-            {
-                return LastCodePart() switch
-                {
-                    "cold" => "construct1",
-                    "extinct" => "construct1", // Extinct bonfires also start construction from stage 1
-                    "construct1" => "construct2",
-                    "construct2" => "construct3",
-                    // If it's construct3, the visual state should not change, but fuel is added.
-                    // This case is handled explicitly in OnBlockInteractStart, not by this property.
-                    _ => "cold" // Fallback, though should be handled by OnBlockInteractStart
+                    "extinct" => EBonfireStage.Extinct,
+                    "base" => EBonfireStage.Base,
+                    "construct1" => EBonfireStage.Construct1,
+                    "construct2" => EBonfireStage.Construct2,
+                    "construct3" => EBonfireStage.Construct3,
+                    _ => EBonfireStage.Extinct // Default for unknown states
                 };
             }
         }
@@ -95,13 +76,13 @@ namespace Bonfires
                         var bef = coreApi.World.BlockAccessor.GetBlockEntity(bs.Position) as BlockEntityBonfire;
                         
                         // Get the Stage from the actual block in the world
-                        int currentStage = (currentBlockInWorld as BlockBonfire)?.Stage ?? 0;
+                        var currentStage = (currentBlockInWorld as BlockBonfire)?.Stage ?? EBonfireStage.Extinct;
 
                         // Show "Add Fuel" if it's not burning and either:
-                        // 1. It's in a construction stage (Stage 0-3)
-                        // 2. It's fully constructed (Stage 4, 'cold' state) and not full of fuel
+                        // 1. It's in a construction stage
+                        // 2. It's fully constructed and not full of fuel
                         return !currentBlockInWorld.LastCodePart().Equals("lit") && bef != null &&
-                               (currentStage < 3 || (currentStage >= 3 && bef.TotalFuel < BlockEntityBonfire.MaxFuel))
+                               (currentStage < EBonfireStage.Construct3 || (currentStage >= EBonfireStage.Construct3 && bef.TotalFuel < BlockEntityBonfire.MaxFuel))
                                ? wi.Itemstacks : null;
                     }
                 }
@@ -163,17 +144,17 @@ namespace Bonfires
             if (bef == null) return base.OnBlockInteractStart(world, byPlayer, blockSel); // Should not happen if it's a BlockBonfire
 
             // Determine current stage using the Stage property of the current block in world
-            int currentStage = (currentBlockInWorld as BlockBonfire)?.Stage ?? 0;
+            var currentStage = (currentBlockInWorld as BlockBonfire)?.Stage ?? EBonfireStage.Extinct;
 
-            // Handle construction stages (Stage 0, 1, 2)
-            if (currentStage < 3) // extinct, cold, construct1, construct2
+            // Handle construction stages (Extinct, Base, Construct1, Construct2)
+            if (currentStage < EBonfireStage.Construct3) 
             {
                 // Determine the next state based on the current block's code part
                 string nextStateCodePart;
                 switch (currentCodePart)
                 {
                     case "extinct":
-                    case "cold":
+                    case "base":
                         nextStateCodePart = "construct1";
                         break;
                     case "construct1":
@@ -199,12 +180,12 @@ namespace Bonfires
                 }
                 return true;
             }
-            // Handle fueling phase (Stage 3: construct3, Stage 4: cold)
-            else if (currentStage >= 3) // This covers construct3 and cold states
+            // Handle fueling phase (Stage: Construct3)
+            else if (currentStage >= EBonfireStage.Construct3) // This covers the fully constructed state
             {
                 if (bef.Refuel(1))
                 {
-                    // No visual change for the block itself here, it remains construct3 or cold
+                    // No visual change for the block itself here, it remains construct3
                     if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
                     {
                         hotbarSlot.TakeOut(1); // Consume 1 firewood for fuel
