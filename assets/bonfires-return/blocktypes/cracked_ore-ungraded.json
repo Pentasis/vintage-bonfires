@@ -2,6 +2,10 @@
 	"code": "cracked_ore",
 	"__comment": "BlockOre only contains a few lines of code to replace flint ore into plain stone",
 	"class": "BlockOre",
+	"classbyType":{
+		"cracked_ore-bituminouscoal-*":"BlockBituCoal",
+		"cracked_ore-anthracite-*":"BlockBituCoal"
+	},
 	"blockmaterial": "Ore",
 	"attributes": {
 		"handbook": {
@@ -10,7 +14,7 @@
 			"excludeFromList": true
 		}
 	},
-	"behaviors": [{ "name": "BreakIfFloating" }],
+	"behaviors": [{ "name": "BreakIfFloating" }, { "name": "UnstableRock" }],
 	"variantgroups": [
 		{ "code": "type", "states": ["flint"], "loadFromProperties": "game:block/ore-ungraded" },
 		{ "code": "rock", "loadFromProperties": "game:block/rockwithdeposit" }
@@ -85,10 +89,10 @@
 			{ "type": "item", "code": "game:ore-{type}",  "quantity": { "avg": 1.25, "var": 0 }  }
 		]
 	},
-	"heldTpIdleAnimation": "holdbothhandslarge", "heldTpUseAnimation": "twohandplaceblock",
+	"heldTpIdleAnimation": "holdbothhandslarge", "heldRightReadyAnimation": "heldblockready", "heldTpUseAnimation": "twohandplaceblock",
 	"tpHandTransform": {
-		"translation": { "x": -1.2, "y": -1.1, "z": -0.8 },
+		"translation": { "x": -1.23, "y": -0.91, "z": -0.8 },
 		"rotation": { "x": -2, "y": 25, "z": -78 },
-		"scale": 0.37
+		"scale": 0.4
 	}
 }

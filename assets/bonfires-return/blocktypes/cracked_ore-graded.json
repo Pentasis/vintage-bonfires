@@ -9,7 +9,7 @@
 			"excludeFromList": true
 		}
 	},
-	"behaviors": [{ "name": "BreakIfFloating" }],
+	"behaviors": [{ "name": "BreakIfFloating" }, { "name": "UnstableRock" }],
 	"variantgroups": [
 		{ "code": "grade", "states": ["poor", "medium", "rich", "bountiful"] },
 		{ "code": "type",  "loadFromProperties": "game:block/ore-graded" },
@@ -49,10 +49,11 @@
 		"cracked_ore-*-chromite-*": 4,
 		"cracked_ore-*-platinum-*": 4,
 		"cracked_ore-*-ilmenite-*": 4,
-		"cracked_ore-*-sphalerite-*": 1,		"cracked_ore-*-rocksalt_sylvite-*": 1,
+		"cracked_ore-*-sphalerite-*": 1,
+		"cracked_ore-*-rocksalt_sylvite-*": 1,
 		"cracked_ore-*-bismuthinite-*": 1,
-		"cracked_ore-*-quartz_nativesilver-*":2 ,
-		"cracked_ore-*-galena_nativesilver-*":1 ,
+		"cracked_ore-*-quartz_nativesilver-*": 2,
+		"cracked_ore-*-galena_nativesilver-*": 1,
 		"cracked_ore-*-quartz_nativegold-*": 2,
 		"cracked_ore-*-pentlandite-*": 3,
 		"cracked_ore-*-uranium-*": 3,
@@ -61,14 +62,14 @@
 	},
 	"dropsByType": {
 		"*": [ 
-			{ "type": "item", "code": "game:crystalizedore-{grade}-{type}-{rock}",  "quantity": { "avg": 0.005, "var": 0 }  },
+			{ "type": "item", "code": "game:crystalizedore-{grade}-{type}-{rock}",  "quantity": { "avg": 0.01, "var": 0 }  },
 			{ "type": "item", "code": "game:ore-{grade}-{type}-{rock}",  "quantity": { "avg": 1.25, "var": 0 }  }
 		]
 	},
-	"heldTpIdleAnimation": "holdbothhandslarge", "heldTpUseAnimation": "twohandplaceblock",
+	"heldTpIdleAnimation": "holdbothhandslarge", "heldRightReadyAnimation": "heldblockready", "heldTpUseAnimation": "twohandplaceblock",
 	"tpHandTransform": {
-		"translation": { "x": -1.2, "y": -1.1, "z": -0.8 },
+		"translation": { "x": -1.23, "y": -0.91, "z": -0.8 },
 		"rotation": { "x": -2, "y": 25, "z": -78 },
-		"scale": 0.37
+		"scale": 0.4
 	}
 }

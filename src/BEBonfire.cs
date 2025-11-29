@@ -204,35 +204,46 @@ namespace Bonfires
 
         /// <summary>
         /// Extinguishes the fire, changing its state to "extinct" and stopping the burning process.
-        /// Also handles cracking nearby ore/rock.
+        /// Also handles cracking or breaking nearby ore and rock.
         /// </summary>
         public void KillFire()
         {
             _remainingBurnSeconds = 0;
             UnregisterGameTickListener(_listener);
 
-            // --- Crack Ore/Rock Logic ---
+            // --- Crack or Break Ore/Rock Logic ---
             foreach (BlockFacing facing in BlockFacing.ALLFACES)
             {
                 BlockPos npos = Pos.AddCopy(facing);
-                Block? belowBlock = Api.World.BlockAccessor.GetBlock(npos);
-                if (belowBlock == null) continue;
+                Block? targetBlock = Api.World.BlockAccessor.GetBlock(npos);
+                if (targetBlock == null || targetBlock.BlockId == 0) continue;
 
-                AssetLocation? cracked = null;
-                if (belowBlock.FirstCodePart().Equals("ore"))
+                string blockCode = targetBlock.FirstCodePart();
+
+                // If the block is already cracked, break it into its drops.
+                if (blockCode.Equals("cracked_ore") || blockCode.Equals("crackedrock"))
                 {
-                    cracked = belowBlock.CodeWithPart("cracked_ore");
-                    cracked.Domain = "bonfires-return";
+                    Api.World.BlockAccessor.BreakBlock(npos, null);
                 }
-                else if (belowBlock.FirstCodePart().Equals("rock"))
+                // If it's ore, turn it into cracked ore.
+                else if (blockCode.Equals("ore"))
                 {
-                    cracked = belowBlock.CodeWithPart("cracked_rock");
-                    cracked.Domain = "bonfires-return";
+                    AssetLocation crackedLoc = targetBlock.CodeWithPart("cracked_ore").WithDomain("bonfires-return");
+                    Block crackedBlock = Api.World.GetBlock(crackedLoc);
+                    if (crackedBlock != null)
+                    {
+                        Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
+                    }
                 }
-                if (cracked != null && cracked.Valid)
+                // If it's rock, turn it into vanilla cracked rock.
+                else if (blockCode.Equals("rock"))
                 {
-                    Block crackedBlock = Api.World.GetBlock(cracked);
-                    Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
+                    AssetLocation crackedLoc = targetBlock.CodeWithPart("crackedrock").WithDomain("game");
+                    Block crackedBlock = Api.World.GetBlock(crackedLoc);
+                    if (crackedBlock != null)
+                    {
+                        Api.World.BlockAccessor.ExchangeBlock(crackedBlock.Id, npos);
+                    }
                 }
             }
             
@@ -342,6 +353,8 @@ namespace Bonfires
             base.ToTreeAttributes(tree);
             tree.SetFloat("remainingBurnSeconds", _remainingBurnSeconds);
         }
+
+
 
         /// <summary>
         /// Called when the block is removed. Cleans up sounds and other resources.
