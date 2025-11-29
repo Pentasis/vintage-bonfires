@@ -13,6 +13,19 @@ namespace Bonfires
 {
     public class BlockEntityBonfire : BlockEntity, IHeatSource
     {
+        // Constants for magic numbers
+        private const int FIREWOOD_BURNTIME_MULTIPLIER = 4;
+        private const int FALLBACK_FIREWOOD_BURNTIME = 24;
+        private const int HEAT_STRENGTH_BURNING = 30;
+        private const int HEAT_STRENGTH_EXTINCT = 1;
+        private const float AMBIENT_SOUND_VOLUME = 2f;
+        private const float FIRE_DAMAGE = 2f;
+        private const double IGNITE_CHANCE = 0.125;
+        private const double FIRE_SPREAD_CHANCE = 0.2;
+        private const int ENTITY_DETECTION_RANGE = 3;
+        private const int FIRE_SPREAD_UP_MIN = 2;
+        private const int FIRE_SPREAD_UP_MAX = 5;
+
         private float _remainingBurnSeconds;
         private float _secondsPerFuelItem;
 
@@ -21,7 +34,7 @@ namespace Bonfires
         private ILoadedSound? _ambientSound;
         private long _listener;
 
-        public const int MaxFuel = 32;
+        public const int MAX_FUEL = 32;
 
         private static readonly Cuboidf FireCuboid = new(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
 
@@ -35,12 +48,11 @@ namespace Bonfires
             var firewood = Api.World.GetItem(new AssetLocation("firewood"));
             if (firewood?.CombustibleProps != null)
             {
-                _secondsPerFuelItem = firewood.CombustibleProps.BurnDuration * 4;
+                _secondsPerFuelItem = firewood.CombustibleProps.BurnDuration * FIREWOOD_BURNTIME_MULTIPLIER;
             }
             else
             {
-                // Fallback: 24 seconds * 4
-                _secondsPerFuelItem = 24 * 4;
+                _secondsPerFuelItem = FALLBACK_FIREWOOD_BURNTIME * FIREWOOD_BURNTIME_MULTIPLIER;
             }
 
             _fireBlock = Api.World.GetBlock(new AssetLocation("fire"));
@@ -66,7 +78,7 @@ namespace Bonfires
                     ShouldLoop = true,
                     Position = Pos.ToVec3f().Add(0.5f, 0.25f, 0.5f),
                     DisposeOnFinish = false,
-                    Volume = 2f
+                    Volume = AMBIENT_SOUND_VOLUME
                 });
 
                 if (_ambientSound != null)
@@ -128,7 +140,7 @@ namespace Bonfires
                     return;
                 }
 
-                Entity[] entities = Api.World.GetEntitiesAround(Pos.ToVec3d().Add(0.5, 0.5, 0.5), 3, 3, _ => true);
+                Entity[] entities = Api.World.GetEntitiesAround(Pos.ToVec3d().Add(0.5, 0.5, 0.5), ENTITY_DETECTION_RANGE, ENTITY_DETECTION_RANGE, _ => true);
                 Vec3d ownPos = Pos.ToVec3d();
                 foreach (Entity entity in entities)
                 {
@@ -136,10 +148,10 @@ namespace Bonfires
 
                     if (entity.Alive)
                     {
-                        entity.ReceiveDamage(new DamageSource { Source = EnumDamageSource.Block, SourceBlock = _fireBlock, SourcePos = ownPos, Type = EnumDamageType.Fire }, 2f);
+                        entity.ReceiveDamage(new DamageSource { Source = EnumDamageSource.Block, SourceBlock = _fireBlock, SourcePos = ownPos, Type = EnumDamageType.Fire }, FIRE_DAMAGE);
                     }
 
-                    if (Api.World.Rand.NextDouble() < 0.125)
+                    if (Api.World.Rand.NextDouble() < IGNITE_CHANCE)
                     {
                         entity.Ignite();
                     }
@@ -151,7 +163,7 @@ namespace Bonfires
                     return;
                 }
 
-                if (((ICoreServerAPI)Api).Server.Config.AllowFireSpread && 0.2 > Api.World.Rand.NextDouble())
+                if (((ICoreServerAPI)Api).Server.Config.AllowFireSpread && FIRE_SPREAD_CHANCE > Api.World.Rand.NextDouble())
                 {
                     TrySpreadFireAllDirs();
                 }
@@ -213,7 +225,7 @@ namespace Bonfires
 
         public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
         {
-            return Burning ? 30 : 1;
+            return Burning ? HEAT_STRENGTH_BURNING : HEAT_STRENGTH_EXTINCT;
         }
 
         private void TrySpreadFireAllDirs()
@@ -223,7 +235,7 @@ namespace Bonfires
                 BlockPos npos = Pos.AddCopy(facing);
                 TrySpreadTo(npos);
             }
-            for (int up = 2; up <= 5; up++)
+            for (int up = FIRE_SPREAD_UP_MIN; up <= FIRE_SPREAD_UP_MAX; up++)
             {
                 BlockPos npos = Pos.UpCopy(up);
                 TrySpreadTo(npos);
@@ -310,19 +322,17 @@ namespace Bonfires
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
-            dsc.AppendLine(Lang.Get("bonfires-return:bonfire-fuel", TotalFuel, MaxFuel));
+            dsc.AppendLine(Lang.Get("bonfires-return:bonfire-fuel", TotalFuel, MAX_FUEL));
         }
-
-
 
         public bool Refuel(int amount)
         {
-            if (TotalFuel >= MaxFuel) return false;
+            if (TotalFuel >= MAX_FUEL) return false;
 
             _remainingBurnSeconds += amount * _secondsPerFuelItem;
-            if (TotalFuel > MaxFuel)
+            if (TotalFuel > MAX_FUEL)
             {
-                _remainingBurnSeconds = MaxFuel * _secondsPerFuelItem;
+                _remainingBurnSeconds = MAX_FUEL * _secondsPerFuelItem;
             }
 
             MarkDirty(true);

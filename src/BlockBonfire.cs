@@ -9,6 +9,12 @@ namespace Bonfires
 {
     public class BlockBonfire : Block, IIgnitable
     {
+        // Constants for magic numbers and string literals
+        private const float IGNITE_SECONDS = 3f;
+        private const string FIREWOOD_ITEM_CODE = "firewood";
+        private const string BURNSTATE_VARIANT_CODE = "burnstate";
+        private const int FIREWOOD_CONSUME_AMOUNT = 1;
+
         private WorldInteraction[] _interactions = System.Array.Empty<WorldInteraction>();
 
         // Stage property now returns an EBonfireStage enum for better type safety and readability.
@@ -43,7 +49,7 @@ namespace Bonfires
                     if (stacks != null) canIgniteStacks.AddRange(stacks);
                 }
 
-                if (obj is Item item && item.Code.Path == "firewood")
+                if (obj is Item item && item.Code.Path == FIREWOOD_ITEM_CODE)
                 {
                     var stacks = obj.GetHandBookStacks(coreApi as ICoreClientAPI);
                     if (stacks != null) fuelStacks.AddRange(stacks);
@@ -82,7 +88,7 @@ namespace Bonfires
                         // 1. It's in a construction stage
                         // 2. It's fully constructed and not full of fuel
                         return !currentBlockInWorld.LastCodePart().Equals("lit") && bef != null &&
-                               (currentStage < EBonfireStage.Construct3 || (currentStage >= EBonfireStage.Construct3 && bef.TotalFuel < BlockEntityBonfire.MaxFuel))
+                               (currentStage < EBonfireStage.Construct3 || (currentStage >= EBonfireStage.Construct3 && bef.TotalFuel < BlockEntityBonfire.MAX_FUEL))
                                ? wi.Itemstacks : null;
                     }
                 }
@@ -101,7 +107,7 @@ namespace Bonfires
                 return EnumIgniteState.NotIgnitablePreventDefault;
             }
 
-            return secondsIgniting > 3 ? EnumIgniteState.IgniteNow : EnumIgniteState.Ignitable;
+            return secondsIgniting > IGNITE_SECONDS ? EnumIgniteState.IgniteNow : EnumIgniteState.Ignitable;
         }
 
         public void OnTryIgniteBlockOver(EntityAgent byEntity, BlockPos pos, float secondsIgniting, ref EnumHandling handling)
@@ -123,7 +129,7 @@ namespace Bonfires
                 return EnumIgniteState.NotIgnitablePreventDefault;
             }
 
-            return secondsIgniting > 3 ? EnumIgniteState.IgniteNow : EnumIgniteState.Ignitable;
+            return secondsIgniting > IGNITE_SECONDS ? EnumIgniteState.IgniteNow : EnumIgniteState.Ignitable;
         }
 
 
@@ -131,7 +137,7 @@ namespace Bonfires
         {
             var hotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
             // Only proceed if holding firewood
-            if (hotbarSlot?.Itemstack?.Collectible.Code.Path != "firewood")
+            if (hotbarSlot?.Itemstack?.Collectible.Code.Path != FIREWOOD_ITEM_CODE)
                 return base.OnBlockInteractStart(world, byPlayer, blockSel);
 
             BlockPos pos = blockSel.Position;
@@ -168,14 +174,14 @@ namespace Bonfires
                         return base.OnBlockInteractStart(world, byPlayer, blockSel);
                 }
 
-                Block nextConstructionBlock = world.GetBlock(currentBlockInWorld.CodeWithVariant("burnstate", nextStateCodePart));
+                Block nextConstructionBlock = world.GetBlock(currentBlockInWorld.CodeWithVariant(BURNSTATE_VARIANT_CODE, nextStateCodePart));
                 world.BlockAccessor.ExchangeBlock(nextConstructionBlock.Id, pos);
                 world.BlockAccessor.MarkBlockDirty(pos);
                 if (nextConstructionBlock.Sounds != null) world.PlaySoundAt(nextConstructionBlock.Sounds.Place, pos.X, pos.Y, pos.Z, byPlayer);
 
                 if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
                 {
-                    hotbarSlot.TakeOut(1); // Consume 1 firewood for construction
+                    hotbarSlot.TakeOut(FIREWOOD_CONSUME_AMOUNT); // Consume 1 firewood for construction
                     hotbarSlot.MarkDirty();
                 }
                 return true;
@@ -183,12 +189,12 @@ namespace Bonfires
             // Handle fueling phase (Stage: Construct3)
             else if (currentStage >= EBonfireStage.Construct3) // This covers the fully constructed state
             {
-                if (bef.Refuel(1))
+                if (bef.Refuel(FIREWOOD_CONSUME_AMOUNT))
                 {
                     // No visual change for the block itself here, it remains construct3
                     if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
                     {
-                        hotbarSlot.TakeOut(1); // Consume 1 firewood for fuel
+                        hotbarSlot.TakeOut(FIREWOOD_CONSUME_AMOUNT); // Consume 1 firewood for fuel
                         hotbarSlot.MarkDirty();
                     }
                     return true;
