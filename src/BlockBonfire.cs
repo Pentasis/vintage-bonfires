@@ -200,7 +200,7 @@ namespace Bonfires
                         nextStateCodePart = "construct3";
                         break;
                     default:
-                        return base.OnBlockInteractStart(world, byPlayer, blockSel); // Should not be reached.
+                        return base.OnBlockInteractStart(world, byPlayer, blockSel); // Should never be reached.
                 }
 
                 // Exchange the current block for the next construction stage block.

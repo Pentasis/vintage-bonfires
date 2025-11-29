@@ -228,7 +228,8 @@ namespace Bonfires
                 // If it's ore, turn it into cracked ore.
                 else if (blockCode.Equals("ore"))
                 {
-                    AssetLocation crackedLoc = targetBlock.CodeWithPart("cracked_ore").WithDomain("vintage-bonfires");
+                    AssetLocation crackedLoc = targetBlock.CodeWithPart("cracked_ore");
+                    crackedLoc.Domain = "vintage-bonfires";
                     Block crackedBlock = Api.World.GetBlock(crackedLoc);
                     if (crackedBlock != null)
                     {
@@ -238,7 +239,8 @@ namespace Bonfires
                 // If it's rock, turn it into vanilla cracked rock.
                 else if (blockCode.Equals("rock"))
                 {
-                    AssetLocation crackedLoc = targetBlock.CodeWithPart("crackedrock").WithDomain("game");
+                    AssetLocation crackedLoc = targetBlock.CodeWithPart("crackedrock");
+                    crackedLoc.Domain = "game";
                     Block crackedBlock = Api.World.GetBlock(crackedLoc);
                     if (crackedBlock != null)
                     {
