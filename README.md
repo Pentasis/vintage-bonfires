@@ -1,4 +1,4 @@
-# Bonfires Return
+# Vintage Bonfires
 
 A *Vintage Story* mod that adds bonfires back into the game.
 
