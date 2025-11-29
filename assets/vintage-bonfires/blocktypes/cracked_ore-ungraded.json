@@ -1,0 +1,98 @@
+{
+	"code": "cracked_ore",
+	"__comment": "BlockOre only contains a few lines of code to replace flint ore into plain stone",
+	"class": "BlockOre",
+	"classbyType":{
+		"cracked_ore-bituminouscoal-*":"BlockBituCoal",
+		"cracked_ore-anthracite-*":"BlockBituCoal"
+	},
+	"blockmaterial": "Ore",
+	"attributes": {
+		"handbook": {
+			"groupBy": ["cracked_ore-{type}-*"],
+			"groupedName": ["cracked_ore-{type}"],
+			"excludeFromList": true
+		}
+	},
+	"behaviors": [{ "name": "BreakIfFloating" }, { "name": "UnstableRock" }],
+	"variantgroups": [
+		{ "code": "type", "states": ["flint"], "loadFromProperties": "game:block/ore-ungraded" },
+		{ "code": "rock", "loadFromProperties": "game:block/rockwithdeposit" }
+	],
+	"skipVariants": [
+		"cracked_ore-flint-suevite",
+		"cracked_ore-flint-halite",
+		"cracked_ore-flint-alum",
+		"cracked_ore-flint-whitemarble",
+		"cracked_ore-flint-redmarble",
+		"cracked_ore-flint-greenmarble",
+		"cracked_ore-flint-scoria",
+		"cracked_ore-flint-tuff",
+		"cracked_ore-flint-obsidian"
+	],
+	"creativeinventory": { "general": ["*"], "terrain": ["*"] },
+	"storageFlags": 5,
+	"shape": { "base": "game:block/basic/cube" },
+	"drawtype": "cube",
+	"textures": {
+		"all": {
+			"base": "game:block/stone/rock/{rock}1",
+			"overlays": [ "game:block/stone/ore/{type}1", "game:block/overlay/cracked1" ],
+			"alternates": [
+				{ "base": "game:block/stone/rock/{rock}1", "overlays": [ "game:block/stone/ore/{type}2", "game:block/overlay/cracked1" ] },
+				{ "base": "game:block/stone/rock/{rock}1", "overlays": [ "game:block/stone/ore/{type}3", "game:block/overlay/cracked1" ] }
+			]
+		}
+	},
+	"replaceable": 100,
+	"resistance": 8,
+	"sounds": {
+		"walk": "walk/stone",
+		"byTool": {
+			"Pickaxe": { "hit": "game:block/rock-hit-pickaxe", "break": "game:block/rock-break-pickaxe" }
+		}
+	},
+	"requiredMiningTierByType": {
+		"cracked_ore-flint-*": 0,
+		"cracked_ore-lignite-*": 1,
+		"cracked_ore-bituminouscoal-*": 2,
+		"cracked_ore-anthracite-*": 2,
+		"cracked_ore-borax-*": 2,
+		"cracked_ore-cinnabar-*": 2,
+		"cracked_ore-sylvite-*": 1,
+		"cracked_ore-lapislazuli-*": 1,
+		"cracked_ore-corundum-*": 1,
+		"cracked_ore-diamond-*": 3,
+		"cracked_ore-emerald-*": 3,
+		"cracked_ore-bismuthinite-*": 1,
+		"cracked_ore-quartz-*": 2,
+		"cracked_ore-olivine-*": 2,
+		"cracked_ore-graphite-*": 2,
+		"cracked_ore-kernite-*": 2,
+		"cracked_ore-fluorite-*": 2,
+		"cracked_ore-phosphorite-*": 2,
+		"cracked_ore-alum-*": 1,
+		"cracked_ore-sulfur-*": 1
+	},
+	"dropsByType": {
+		"cracked_ore-quartz-*": [
+			{ "type": "item", "code": "game:clearquartz",  "quantity": { "avg": 0.2, "var": 0 }, "lastDrop": true },
+			{ "type": "item", "code": "game:ore-quartz",  "quantity": { "avg": 1.25, "var": 0 }  }
+		],
+		"cracked_ore-flint-*": [
+			{ "type": "item", "code": "game:flint",  "quantity": { "avg": 1.5, "var": 0 }, "lastDrop": true }
+		],
+		"cracked_ore-sylvite-*": [
+			{ "type": "item", "code": "game:ore-{type}",  "quantity": { "avg": 2.5, "var": 0.25 }  }
+		],
+		"*": [ 
+			{ "type": "item", "code": "game:ore-{type}",  "quantity": { "avg": 1.25, "var": 0 }  }
+		]
+	},
+	"heldTpIdleAnimation": "holdbothhandslarge", "heldRightReadyAnimation": "heldblockready", "heldTpUseAnimation": "twohandplaceblock",
+	"tpHandTransform": {
+		"translation": { "x": -1.23, "y": -0.91, "z": -0.8 },
+		"rotation": { "x": -2, "y": 25, "z": -78 },
+		"scale": 0.4
+	}
+}
