@@ -31,3 +31,4 @@ I’m fairly new to Vintage Story modding, so I used AI as a code-checking and l
 
 *) The original mod was released under the CC0 1.0 Universal licence (which I continue), which is extremely permissive. I still asked the original author for permission but haven’t received a reply yet. If they ever wish to continue their own mod, I will remove this one without fuss.
 
+Bonfire sound by [homejrande](https://freesound.org/people/homejrande/sounds/17375/)
