@@ -5,7 +5,7 @@ A *Vintage Story* mod that adds bonfires back into the game.
 Continued from [Bonfires](https://mods.vintagestory.at/bonfires) original idea by [Zarkonnen](https://mods.vintagestory.at/show/user/3A823AFC2B0FB0879692).*)
 
 This version has been updated to work with 1.21.x. The code has been largely rewritten, and while it appears to work, it still needs a fair bit of refactoring and tidying up.
-**Use with care in worlds you actually care about.**
+**Use with care in worlds you actually care about until version 1.0.0 releases.**
 
 I’m fairly new to Vintage Story modding, so I used AI as a code-checking and learning aid. **It did not (re)write the mod**, it merely helped me understand what I was doing. Apparently, this now needs stating out loud.
 

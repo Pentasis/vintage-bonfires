@@ -2,7 +2,7 @@
 	"type": "code",
 	"name": "Vintage Bonfires",
 	"modid": "vintage-bonfires",
-	"version": "1.0.0",
+	"version": "0.2.0",
 	
 	"description" : "Adds bonfires with fire-setting abilities.",
 	"website": "https://github.com/Zarkonnen/VSBonfires/tree/main",
