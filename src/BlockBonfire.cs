@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
@@ -102,7 +101,7 @@ namespace Bonfires
                         // 1. It's in a construction stage (Stage 0-3)
                         // 2. It's fully constructed (Stage 4, 'cold' state) and not full of fuel
                         return !currentBlockInWorld.LastCodePart().Equals("lit") && bef != null &&
-                               (currentStage < 3 || (currentStage >= 3 && bef.TotalFuel < bef.MaxFuel))
+                               (currentStage < 3 || (currentStage >= 3 && bef.TotalFuel < BlockEntityBonfire.MaxFuel))
                                ? wi.Itemstacks : null;
                     }
                 }

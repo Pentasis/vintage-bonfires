@@ -1,14 +1,25 @@
-# Bonfires return
+# Bonfires Return
 
-Vintage Story mod that adds bonfires.
+A *Vintage Story* mod that adds bonfires back into the game.
 
-Continued from [Bonfires](https://mods.vintagestory.at/bonfires) by [Zarkonnen](https://mods.vintagestory.at/show/user/3A823AFC2B0FB0879692), with their permission.
-(Forked from https://github.com/Zarkonnen/VSBonfires).
+Continued from [Bonfires](https://mods.vintagestory.at/bonfires) by [Zarkonnen](https://mods.vintagestory.at/show/user/3A823AFC2B0FB0879692).*)
 
-I updated the mod so it works in 1.21.x and removed the cracked ore ability for now.
-I will add some extra functionality in the near future:
+This version has been updated to work with 1.21.x. The code has been largely rewritten, and while it appears to work, it still needs a fair bit of refactoring and tidying up.
+**Use with care in worlds you actually care about.**
 
-- Re-add the cracked ore functionality as a configurable option.
-- Add a config-setting to prevent monsters spawning in a specified radius when lit.
-- Add compatibility with Real Smoke (if anyone wants to help me with that; that would be great!)
+I’m fairly new to Vintage Story modding, so I used AI as a code-checking and learning aid. **It did not (re)write the mod**, it merely helped me understand what I was doing. Apparently, this now needs stating out loud.
+
+---
+
+## Planned Features
+
+* Configuration option to disable ore cracking
+* Configuration option to prevent monster spawning within a set radius while lit
+  (possibly animals too, we’ll see)
+* Compatibility with *Real Smoke*
+  (help welcome if anyone fancies it)
+
+---
+
+*) The original mod was released under the CC0 1.0 Universal licence (which I continue), which is extremely permissive. I still asked the original author for permission but haven’t received a reply yet. If they ever wish to continue their own mod, I will remove this one without fuss.
 

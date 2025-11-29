@@ -17,11 +17,11 @@ namespace Bonfires
         private float _secondsPerFuelItem;
 
         private Block? _fireBlock;
-        public string startedByPlayerUid = null!;
+        public string StartedByPlayerUid = null!;
         private ILoadedSound? _ambientSound;
         private long _listener;
 
-        public int MaxFuel = 32;
+        public const int MaxFuel = 32;
 
         private static readonly Cuboidf FireCuboid = new(-0.35f, 0, -0.35f, 1.35f, 2.8f, 1.35f);
 
@@ -172,7 +172,7 @@ namespace Bonfires
         {
             if (TotalFuel <= 0) return;
 
-            startedByPlayerUid = playerUid;
+            StartedByPlayerUid = playerUid;
             SetBlockState("lit");
             MarkDirty(true);
             InitSoundsAndTicking();
@@ -252,7 +252,7 @@ namespace Bonfires
             }
             if (fuelPos == null) return false;
 
-            IPlayer? player = Api.World.PlayerByUid(startedByPlayerUid);
+            IPlayer? player = Api.World.PlayerByUid(StartedByPlayerUid);
             if (player != null && Api.World.Claims.TestAccess(player, pos, EnumBlockAccessFlags.BuildOrBreak) != EnumWorldAccessResponse.Granted)
             {
                 return false;
@@ -263,7 +263,7 @@ namespace Bonfires
             BlockEntity? befire = Api.World.BlockAccessor.GetBlockEntity(pos);
             if (befire != null)
             {
-                befire.GetBehavior<BEBehaviorBurning>()?.OnFirePlaced(pos, fuelPos, startedByPlayerUid);
+                befire.GetBehavior<BEBehaviorBurning>()?.OnFirePlaced(pos, fuelPos, StartedByPlayerUid);
             }
 
             return true;
