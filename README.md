@@ -11,13 +11,21 @@ I’m fairly new to Vintage Story modding, so I used AI as a code-checking and l
 
 ---
 
+## Features:
+- Adds a bonfire. Craft a base (in a grid). place it and add enough firewood, then light it. Once it burns out, you can rebuild it by adding firewood again.
+- When placed on or near rock and/or ores, it will:
+  - convert rock and ore into cracked-rock and cracked-ore with 1 mining tier lower than non-cracked.
+  - break cracked rocks and cracked ores into stone/ore drops.
+- Bonfires burn firewood 4x longer than regular fires. (will be configurable in future)
+
 ## Planned Features
 
-* Configuration option to disable ore cracking
-* Configuration option to prevent monster spawning within a set radius while lit
+- Configuration option to disable ore cracking
+- Configuration option to prevent monster spawning within a set radius while lit
   (possibly animals too, we’ll see)
-* Compatibility with *Real Smoke*
+- Compatibility with *Real Smoke*
   (help welcome if anyone fancies it)
+- Either remove coal ores from breaking mechanic or make them combustible?
 
 ---
 
