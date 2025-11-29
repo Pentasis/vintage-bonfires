@@ -16,6 +16,7 @@ I’m fairly new to Vintage Story modding, so I used AI as a code-checking and l
 - When placed on or near rock and/or ores, it will:
   - convert rock and ore into cracked-rock and cracked-ore with 1 mining tier lower than non-cracked.
   - break cracked rocks and cracked ores into stone/ore drops.
+  This is a method of mining done in ancient times, called *fire-setting*.
 - Bonfires burn firewood 4x longer than regular fires. (will be configurable in future)
 
 ## Planned Features

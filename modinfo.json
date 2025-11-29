@@ -1,12 +1,12 @@
 {
 	"type": "code",
-	"name": "Bonfires return",
-	"modid": "bonfires-return",
+	"name": "Vintage Bonfires",
+	"modid": "vintage-bonfires",
 	"version": "1.0.0",
 	
-	"description" : "Adds bonfires.",
+	"description" : "Adds bonfires with fire-setting abilities.",
 	"website": "https://github.com/Zarkonnen/VSBonfires/tree/main",
-	"authors": [ "Zarkonnen", "Pentasis" ],
+	"authors": [ "Pentasis" ],
 	
 	"dependencies": {
 		"game": "1.21.5"
