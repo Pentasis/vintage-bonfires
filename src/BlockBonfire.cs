@@ -32,7 +32,7 @@ namespace Bonfires
                     "base" => EBonfireStage.Base,
                     "construct1" => EBonfireStage.Construct1,
                     "construct2" => EBonfireStage.Construct2,
-                    "construct3" => EBonfireStage.Construct3,
+                    "unlit" => EBonfireStage.Unlit,
                     "lit" => EBonfireStage.Lit,
                     "extinct" => EBonfireStage.Extinct,
                     _ => EBonfireStage.Extinct // Default to Extinct for any unknown or mismatched states.
@@ -97,8 +97,8 @@ namespace Bonfires
 
                         // The "Add Fuel" help text should appear during construction or when fueling a completed (but not full) bonfire.
                         // It should not appear if the bonfire is lit.
-                        bool isConstructing = currentStage < EBonfireStage.Construct3;
-                        bool canFuel = currentStage == EBonfireStage.Construct3 && bef != null && bef.TotalFuel < BlockEntityBonfire.MAX_FUEL;
+                        bool isConstructing = currentStage == EBonfireStage.Base || currentStage == EBonfireStage.Construct1 || currentStage == EBonfireStage.Construct2 || currentStage == EBonfireStage.Extinct;
+                        bool canFuel = currentStage == EBonfireStage.Unlit && bef != null && bef.TotalFuel < BlockEntityBonfire.MAX_FUEL;
 
                         return currentStage != EBonfireStage.Lit && (isConstructing || canFuel) ? wi.Itemstacks : null;
                     }
@@ -183,16 +183,25 @@ namespace Bonfires
             }
 
             // --- Construction Logic ---
-            // If the bonfire is in any stage before Construct3, it's considered to be in the construction phase.
-            if (currentStage < EBonfireStage.Construct3)
+            // If the bonfire is in any stage before Unlit (or is Extinct), it's in the construction phase.
+            if (currentStage == EBonfireStage.Base || currentStage == EBonfireStage.Construct1 || currentStage == EBonfireStage.Construct2 || currentStage == EBonfireStage.Extinct)
             {
                 string nextStateCodePart;
-                // The extinct state is a special case that resets construction.
-                if (currentStage == EBonfireStage.Extinct) {
-                    nextStateCodePart = "construct1";
-                } else {
-                    // For all other construction stages, advance to the next one.
-                    nextStateCodePart = "construct" + ((int)currentStage + 1);
+                switch (currentStage)
+                {
+                    case EBonfireStage.Extinct:
+                    case EBonfireStage.Base:
+                        nextStateCodePart = "construct1";
+                        break;
+                    case EBonfireStage.Construct1:
+                        nextStateCodePart = "construct2";
+                        break;
+                    case EBonfireStage.Construct2:
+                        nextStateCodePart = "unlit";
+                        break;
+                    default:
+                        // This case is unreachable, but good to keep for robustness.
+                        return base.OnBlockInteractStart(world, byPlayer, blockSel);
                 }
 
                 // Exchange the current block for the next construction stage block.
@@ -201,7 +210,7 @@ namespace Bonfires
                 world.BlockAccessor.MarkBlockDirty(pos);
                 if (nextConstructionBlock.Sounds != null) world.PlaySoundAt(nextConstructionBlock.Sounds.Place, pos.X, pos.Y, pos.Z, byPlayer);
 
-                // Consume one piece of firewood for construction.
+                // Consume firewood for construction.
                 if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
                 {
                     hotbarSlot.TakeOut(FIREWOOD_CONSUME_AMOUNT);
@@ -211,15 +220,15 @@ namespace Bonfires
             }
             
             // --- Fueling Logic ---
-            // If the bonfire is fully constructed, interacting with firewood adds fuel.
-            else if (currentStage == EBonfireStage.Construct3)
+            // If the bonfire is fully constructed (Unlit), interacting with firewood adds fuel.
+            else if (currentStage == EBonfireStage.Unlit)
             {
-                if (bef.Refuel(FIREWOOD_CONSUME_AMOUNT))
+                if (bef.Refuel(1))
                 {
                     // Consume one piece of firewood for fuel.
                     if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
                     {
-                        hotbarSlot.TakeOut(FIREWOOD_CONSUME_AMOUNT);
+                        hotbarSlot.TakeOut(1);
                         hotbarSlot.MarkDirty();
                     }
                     return true; // Interaction handled.

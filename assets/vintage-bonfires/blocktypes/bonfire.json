@@ -3,7 +3,7 @@
 	class: "BlockBonfire",
 	entityClass: "BlockEntityBonfire",
 	variantgroups: [
-		{ code:"burnstate", states: ["construct1", "construct2", "construct3", "extinct", "lit", "base"] }
+		{ code:"burnstate", states: ["base", "construct1", "construct2", "unlit", "lit", "extinct"] }
 	],
 	shape: { base: "bonfire-{burnstate}" },
 	heldTpIdleAnimation: "holdunderarm",
@@ -22,7 +22,7 @@
 		handbook: {
 			groupBy: ["bonfire-*"],
 			extraSections: [
-				{ title: "bonfires:handbooktitle-bonfire", text: "bonfires:handbooktext-bonfire" }
+				{ title: "vintage-bonfires:handbooktitle-bonfire", text: "vintage-bonfires:handbooktext-bonfire" }
 			]
 		}
 	},
@@ -33,12 +33,12 @@
 		"walk": "game:walk/wood"
 	},
     "behaviorsByType": {
+      "*-base": [ { "name": "Unstable" } ],
       "*-construct1": [ { "name": "Unstable" } ],
       "*-construct2": [ { "name": "Unstable" } ],
-      "*-construct3": [ { "name": "Unstable" }, { "name": "Ignitable" } ],
-      "*-extinct": [ { "name": "Unstable" } ],
-      "*-base": [ { "name": "Unstable" } ],
-      "*-lit": [ { "name": "Unstable" }, { "name": "HeatSource" } ]
+      "*-unlit": [ { "name": "Unstable" }, { "name": "Ignitable" } ],
+      "*-lit": [ { "name": "Unstable" }, { "name": "HeatSource" } ],
+      "*-extinct": [ { "name": "Unstable" } ]
     },
 	lightHsvByType: {
 		"bonfire-extinct": [7, 7, 2],
@@ -139,11 +139,23 @@
 	selectionbox: { x1: 0.0625, y1: 0, z1: 0.0625, x2: 0.9375, y2: 0.5, z2: 0.9375 },
 	collisionbox: { x1: 0.0625, y1: 0, z1: 0.0625, x2: 0.9375, y2: 0.5, z2: 0.9375 },
 	dropsByType: {
+		"bonfire-base": [
+			{
+				type: "item",
+				code: "game:stick",
+				quantity: { avg: 16, var: 0 }
+			}
+		],
 		"bonfire-construct1": [
 			{
 				type: "item",
 				code: "game:stick",
 				quantity: { avg: 16, var: 0 }
+			},
+			{
+				type: "item",
+				code: "game:firewood",
+				quantity: { avg: 1, var: 0 }
 			}
 		],
 		"bonfire-construct2": [
@@ -155,10 +167,10 @@
 			{
 				type: "item",
 				code: "game:firewood",
-				quantity: { avg: 8, var: 0 }
+				quantity: { avg: 2, var: 0 }
 			}
 		],
-		"bonfire-construct3": [
+		"bonfire-unlit": [
 			{
 				type: "item",
 				code: "game:stick",
@@ -167,19 +179,7 @@
 			{
 				type: "item",
 				code: "game:firewood",
-				quantity: { avg: 16, var: 0 }
-			}
-		],
-		"bonfire-base": [
-			{
-				type: "item",
-				code: "game:stick",
-				quantity: { avg: 8, var: 0 }
-			},
-			{
-				type: "item",
-				code: "game:firewood",
-				quantity: { avg: 24, var: 0 }
+				quantity: { avg: 3, var: 0 }
 			}
 		],
 		"*": []

@@ -1,11 +1,10 @@
 {
-  "block-bonfire-lit": "Lit Bonfire",
-  "block-bonfire-extinct": "Extinct Bonfire",
-  "block-bonfire-construct1": "Bonfire Base",
-  "block-bonfire-construct2": "Bonfire (Under Construction)",
-  "block-bonfire-construct3": "Bonfire (Under Construction)",
-  "block-bonfire-construct4": "Bonfire (Under Construction)",
-  "block-bonfire-base": "Bonfire",
+  "block-bonfire-base": "Bonfire Construction (base)",
+  "block-bonfire-construct1": "Bonfire Construction (stage 1)",
+  "block-bonfire-construct2": "Bonfire Construction (stage 2)",
+  "block-bonfire-unlit": "Bonfire (unlit)",
+  "block-bonfire-lit": "Bonfire (lit)",
+  "block-bonfire-extinct": "Bonfire (extinguished)",
   
   "vintage-bonfires:blockhelp-bonfire-fuel": "Add fuel",
   "vintage-bonfires:bonfire-fuel": "Fuel: {0}/{1}",
