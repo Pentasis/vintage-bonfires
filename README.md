@@ -23,13 +23,13 @@ Or you can just light one in the town-center and look at it.
 - Integration with the [Real Smoke mod](https://mods.vintagestory.at/realsmoke) I NEED HELP WITH THIS! If anyone can look at my patch to see why no smoke is produced?
 
 ## How to Use Your Bonfire
-1. Craft a Bonfire Base from the handbook (recipe: 3x Firewood, 3x Sticks).
+1. Craft a Bonfire Base from the handbook.
 2. Place the base on the ground, directly adjacent to the rock or ore you wish to crack.
 3. Add 3 Firewood one by one to build the bonfire up to its full size.
 4. Add more Firewood to fuel the bonfire. It can hold up to 32 pieces.
 5. Light the bonfire with a torch or firestarter.
 6. Wait for the fire to burn out. The process takes time!
-7. Collect your rewards! The adjacent rock and ore will now be cracked.
+7. Collect your rewards! The directly(!) adjacent rock and ore will now be cracked.
 8. (Optional) Apply a second bonfire to the cracked blocks to break them completely without using a pickaxe.
 
 ## Planned Features
