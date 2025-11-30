@@ -25,17 +25,16 @@ Or you can just light one in the town-center and look at it.
 ## How to Use Your Bonfire
 1. Craft a Bonfire Base from the handbook.
 2. Place the base on the ground, directly adjacent to the rock or ore you wish to crack.
-3. Add 3x 4 Firewood to build the bonfire up to its full size.
-4. Add more Firewood to fuel the bonfire. It can hold up to 32 pieces, but for cracking you only need 1.
+3. Add 3x 4 Firewood to build the bonfire up to its full size (building a bonfire takes 12 firewood total).
+4. Add more Firewood to fuel the bonfire. It can hold up to 32 pieces but for cracking you only need 1.
 5. Light the bonfire with a torch or firestarter.
 6. Wait for the fire to burn out. The process takes time!
 7. Collect your rewards! The directly(!) adjacent rock and ore will now be cracked.
 8. (Optional) Apply a second bonfire to the cracked blocks to break them completely without using a pickaxe.
 
-## Planned Features
-- Configuration option to prevent monster spawning within a set radius while lit
-  (possibly animals too, we’ll see)
-- Either remove coal ores from breaking mechanic or make them combustible?
+## Planned Features (Will decide based on feedback)
+- Either remove coal ores from the  fire-settings mechanic or make them combustible?
+- Option to prevent monsters and animals from spawning and make them keep distance within a radius while lit? 
 
 ---
 
@@ -43,4 +42,4 @@ Or you can just light one in the town-center and look at it.
 
 Bonfire sound by [homejrande](https://freesound.org/people/homejrande/sounds/17375/)
 
-I’m fairly new to Vintage Story modding, so I used AI as a code-checking and learning aid. **It did not (re)write the mod**, it merely helped me understand what I was doing.
+I’m fairly new to Vintage Story modding, so I used AI as a code-checking and learning aid. **It did not (re)write the mod**, it merely helped me understand what I was doing and added comments where needed.

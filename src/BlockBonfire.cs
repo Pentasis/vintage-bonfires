@@ -15,7 +15,7 @@ namespace Bonfires
     {
         // Constants for gameplay values to improve readability and ease of modification.
         private const float IGNITE_SECONDS = 3f;
-        private const int FIREWOOD_CONSUME_AMOUNT = 1;
+        private const int FIREWOOD_CONSUME_AMOUNT = 4;
 
         private WorldInteraction[] _interactions = System.Array.Empty<WorldInteraction>();
 
