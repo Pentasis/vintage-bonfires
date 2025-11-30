@@ -1,0 +1,19 @@
+[
+  {
+    "dependsOn": [ { "modid": "realsmoke" } ],
+    "file": "vintage-bonfires:blocktypes/bonfire.json",
+    "op": "add",
+    "path": "/behaviorsByType/*-lit/-",
+    "value": {
+      "name": "BlockEntityBehaviorRealSmokeEmitter",
+      "properties":
+      {
+        "smokeProduction": 12,
+        "temperature": 900,
+        "extinguishFunction": "CoolNow",
+        "ventAbove": 1,
+        "canVentSideways": true
+      }
+    }
+  }
+]
