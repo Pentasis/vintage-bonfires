@@ -97,7 +97,7 @@ namespace Bonfires
 
                         // The "Add Fuel" help text should appear during construction or when fueling a completed (but not full) bonfire.
                         // It should not appear if the bonfire is lit.
-                        bool isConstructing = currentStage == EBonfireStage.Base || currentStage == EBonfireStage.Construct1 || currentStage == EBonfireStage.Construct2 || currentStage == EBonfireStage.Extinct;
+                        bool isConstructing = currentStage < EBonfireStage.Construct3;
                         bool canFuel = currentStage == EBonfireStage.Construct3 && bef != null && bef.TotalFuel < BlockEntityBonfire.MAX_FUEL;
 
                         return currentStage != EBonfireStage.Lit && (isConstructing || canFuel) ? wi.Itemstacks : null;
@@ -183,24 +183,16 @@ namespace Bonfires
             }
 
             // --- Construction Logic ---
-            // If the bonfire is in any non-fuelable, non-lit state, interacting with firewood will advance its construction.
-            if (currentStage == EBonfireStage.Base || currentStage == EBonfireStage.Construct1 || currentStage == EBonfireStage.Construct2 || currentStage == EBonfireStage.Extinct)
+            // If the bonfire is in any stage before Construct3, it's considered to be in the construction phase.
+            if (currentStage < EBonfireStage.Construct3)
             {
                 string nextStateCodePart;
-                switch (currentStage)
-                {
-                    case EBonfireStage.Extinct:
-                    case EBonfireStage.Base:
-                        nextStateCodePart = "construct1";
-                        break;
-                    case EBonfireStage.Construct1:
-                        nextStateCodePart = "construct2";
-                        break;
-                    case EBonfireStage.Construct2:
-                        nextStateCodePart = "construct3";
-                        break;
-                    default:
-                        return base.OnBlockInteractStart(world, byPlayer, blockSel); // Should never be reached.
+                // The extinct state is a special case that resets construction.
+                if (currentStage == EBonfireStage.Extinct) {
+                    nextStateCodePart = "construct1";
+                } else {
+                    // For all other construction stages, advance to the next one.
+                    nextStateCodePart = "construct" + ((int)currentStage + 1);
                 }
 
                 // Exchange the current block for the next construction stage block.
