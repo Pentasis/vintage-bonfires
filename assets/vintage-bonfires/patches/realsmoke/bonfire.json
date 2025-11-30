@@ -6,11 +6,11 @@
     "path": "/behaviorsByType/*-lit/-",
     "value": {
       "name": "BlockEntityBehaviorRealSmokeEmitter",
-      "properties":
-      {
-        "smokeProduction": 12,
-        "temperature": 900,
-        "extinguishFunction": "CoolNow",
+      "properties": {
+        "smokeProduction": 8,
+        "isSmoking": "Burning",
+        "extinguishFunction": "KillFire",
+        "temperatureFunction": "GetHeatStrength",
         "ventAbove": 1,
         "canVentSideways": true
       }
