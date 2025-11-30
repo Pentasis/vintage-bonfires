@@ -3,11 +3,9 @@
 	"name": "Vintage Bonfires",
 	"modid": "vintage-bonfires",
 	"version": "0.2.0",
-	
 	"description" : "Adds bonfires with fire-setting abilities.",
-	"website": "https://github.com/Zarkonnen/VSBonfires/tree/main",
+	"website": "https://github.com/Pentasis/vintage-bonfires",
 	"authors": [ "Pentasis" ],
-	
 	"dependencies": {
 		"game": "1.21.5"
 	}

@@ -1,0 +1,9 @@
+[
+{
+  "op": "replace",
+  "path": "/requiredMiningTier",
+  "value": 1, // was 2
+  "file": "game:blocktypes/stone/crackedrock.json",
+  "side": "Server"
+}
+]

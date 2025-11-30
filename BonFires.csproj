@@ -37,7 +37,6 @@
 
     <ItemGroup>
       <Folder Include="assets\" />
-      <Folder Include="assets\vintage-bonfires\patches\blocktypes\" />
     </ItemGroup>
 
     <ItemGroup>

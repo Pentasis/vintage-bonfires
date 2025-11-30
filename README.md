@@ -17,11 +17,10 @@ Perfect for the early-game prospector, Vintage Bonfires provides a satisfying an
 Or you can just light one in the town-center and look at it.
 
 ## Features
-- Fire-Setting Mechanic: Build a bonfire next to solid rock or ore veins. When the fire burns out, the intense heat will crack the adjacent stone. Cracked ore is one tier easier to mine, allowing you to access valuable resources sooner with lower-tier tools.
-- Shatter Rock: Don't want to waste your pickaxe on solid rock? Apply a second bonfire to an already cracked block to shatter it completely, breaking it into its stone drops.
-- A Real Bonfire: Once lit, the bonfire acts as a powerful, long-lasting heat and light source, perfect for a temporary base camp while you work.
+- Fire-Setting Mechanic: Build a bonfire next to solid rock or ore veins. When the fire burns out, the intense heat will crack the adjacent stone. Cracked ore and rock is one tier easier to mine, allowing you to access valuable resources sooner with lower-tier tools.
+- Shatter Rock: Don't want to waste your pickaxe on solid rock? Apply a second bonfire to an already cracked block to shatter it completely, breaking it into its stone or ore drops.
+- A Cosy Bonfire: Once lit, the bonfire acts as a long-lasting heat and light source, perfect for a temporary base camp or a town square.
 - Integration with the [Real Smoke mod](https://mods.vintagestory.at/realsmoke) I NEED HELP WITH THIS! If anyone can look at my patch to see why no smoke is produced?
-- 
 
 ## How to Use Your Bonfire
 1. Craft a Bonfire Base from the handbook (recipe: 3x Firewood, 3x Sticks).
