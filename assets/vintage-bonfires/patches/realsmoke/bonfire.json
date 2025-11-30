@@ -1,19 +1,30 @@
 [
   {
-    "dependsOn": [ { "modid": "realsmoke" } ],
     "file": "vintage-bonfires:blocktypes/bonfire.json",
     "op": "add",
-    "path": "/behaviorsByType/*-lit/-",
-    "value": {
-      "name": "BlockEntityBehaviorRealSmokeEmitter",
-      "properties": {
-        "smokeProduction": 8,
-        "isSmoking": "Burning",
-        "extinguishFunction": "KillFire",
-        "temperatureFunction": "GetHeatStrength",
-        "ventAbove": 1,
-        "canVentSideways": true
+    "path": "/entityBehaviorsByType",
+    "value": {},
+    "side": "Server",
+    "dependsOn": [ { "modid": "realsmoke" } ]
+  },
+  {
+    "file": "vintage-bonfires:blocktypes/bonfire.json",
+    "op": "add",
+    "path": "/entityBehaviorsByType/*-lit",
+    "value": [
+      {
+        "name": "RealSmoke",
+        "properties": {
+          "smokeProduction": 8,
+          "isSmoking": "Burning",
+          "extinguishFunction": "KillFire",
+          "temperatureFunction": "GetHeatStrength",
+          "ventAbove": 1,
+          "canVentSideways": true
+        }
       }
-    }
+    ],
+    "side": "Server",
+    "dependsOn": [ { "modid": "realsmoke" } ]
   }
 ]
