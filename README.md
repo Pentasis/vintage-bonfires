@@ -17,12 +17,11 @@ Perfect for the early-game prospector, Vintage Bonfires provides a satisfying an
 Or you can just light one in the town-center and look at it.
 
 ## Features
-- Fire-Setting Mechanic: Build a bonfire next to solid rock or ore veins. When the fire burns out, the intense heat will crack the adjacent stone.
-- Easier Mining: Cracked ore is one tier easier to mine, allowing you to access valuable resources sooner with lower-tier tools.
+- Fire-Setting Mechanic: Build a bonfire next to solid rock or ore veins. When the fire burns out, the intense heat will crack the adjacent stone. Cracked ore is one tier easier to mine, allowing you to access valuable resources sooner with lower-tier tools.
 - Shatter Rock: Don't want to waste your pickaxe on solid rock? Apply a second bonfire to an already cracked block to shatter it completely, breaking it into its stone drops.
-- Immersive Construction: Bonfires aren't just placed; they are built. Craft a Bonfire Base, then add firewood to construct it through several visual stages before it's ready for fueling.
 - A Real Bonfire: Once lit, the bonfire acts as a powerful, long-lasting heat and light source, perfect for a temporary base camp while you work.
-- Seamless Integration: Works with all vanilla rock and ore types, including graded and ungraded ores. The mod is designed to feel like a natural part of the base game.
+- Integration with the [Real Smoke mod](https://mods.vintagestory.at/realsmoke) I NEED HELP WITH THIS! If anyone can look at my patch to see why no smoke is produced?
+- 
 
 ## How to Use Your Bonfire
 1. Craft a Bonfire Base from the handbook (recipe: 3x Firewood, 3x Sticks).
@@ -37,8 +36,6 @@ Or you can just light one in the town-center and look at it.
 ## Planned Features
 - Configuration option to prevent monster spawning within a set radius while lit
   (possibly animals too, we’ll see)
-- Compatibility with *Real Smoke*
-  (help welcome if anyone fancies it)
 - Either remove coal ores from breaking mechanic or make them combustible?
 
 ---

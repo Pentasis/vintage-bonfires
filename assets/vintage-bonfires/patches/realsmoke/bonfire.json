@@ -1,7 +1,7 @@
 [
   {
     "file": "vintage-bonfires:blocktypes/bonfire.json",
-    "op": "add",
+    "op": "addmerge",
     "path": "/entityBehaviorsByType",
     "value": {},
     "side": "Server",
@@ -9,21 +9,26 @@
   },
   {
     "file": "vintage-bonfires:blocktypes/bonfire.json",
-    "op": "add",
+    "op": "addmerge",
     "path": "/entityBehaviorsByType/*-lit",
     "value": [
       {
-        "name": "RealSmoke",
+        "name": "BlockEntityBehaviorRealSmokeEmitter",
         "properties": {
-          "smokeProduction": 8,
-          "isSmoking": "Burning",
-          "extinguishFunction": "KillFire",
-          "temperatureFunction": "GetHeatStrength",
+          "smokeProduction": 12,
+          "temperature": 700,
           "ventAbove": 1,
           "canVentSideways": true
         }
       }
     ],
+    "side": "Server",
+    "dependsOn": [ { "modid": "realsmoke" } ]
+  },
+  {
+    "file": "vintage-bonfires:blocktypes/bonfire.json",
+    "op": "remove",
+    "path": "/particlePropertiesByType/bonfire-lit/1",
     "side": "Server",
     "dependsOn": [ { "modid": "realsmoke" } ]
   }
