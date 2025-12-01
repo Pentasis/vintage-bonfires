@@ -1,7 +1,7 @@
 {
 	"type": "code",
 	"name": "Vintage Bonfires",
-	"modid": "vintage-bonfires",
+	"modid": "vintagebonfires",
 	"version": "0.2.0",
 	"description" : "Adds bonfires with fire-setting abilities.",
 	"website": "https://github.com/Pentasis/vintage-bonfires",

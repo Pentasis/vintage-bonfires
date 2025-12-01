@@ -94,7 +94,7 @@ namespace Bonfires
             {
                 _ambientSound = ((IClientWorldAccessor)Api.World).LoadSound(new SoundParams
                 {
-                    Location = new AssetLocation("vintage-bonfires:sounds/bonfire.ogg"),
+                    Location = new AssetLocation("vintagebonfires:sounds/bonfire.ogg"),
                     ShouldLoop = true,
                     Position = Pos.ToVec3f().Add(0.5f, 0.25f, 0.5f),
                     DisposeOnFinish = false,
@@ -229,7 +229,7 @@ namespace Bonfires
                 else if (blockCode.Equals("ore"))
                 {
                     AssetLocation crackedLoc = targetBlock.CodeWithPart("cracked_ore");
-                    crackedLoc.Domain = "vintage-bonfires";
+                    crackedLoc.Domain = "vintagebonfires";
                     Block crackedBlock = Api.World.GetBlock(crackedLoc);
                     if (crackedBlock != null)
                     {
@@ -379,7 +379,7 @@ namespace Bonfires
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
-            dsc.AppendLine(Lang.Get("vintage-bonfires:bonfire-fuel", TotalFuel, MAX_FUEL));
+            dsc.AppendLine(Lang.Get("vintagebonfires:bonfire-fuel", TotalFuel, MAX_FUEL));
         }
 
         /// <summary>

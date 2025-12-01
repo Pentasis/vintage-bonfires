@@ -86,7 +86,7 @@ namespace Bonfires
                 },
                 new WorldInteraction
                 {
-                    ActionLangCode = "vintage-bonfires:blockhelp-bonfire-fuel",
+                    ActionLangCode = "vintagebonfires:blockhelp-bonfire-fuel",
                     MouseButton = EnumMouseButton.Right,
                     Itemstacks = fuelStacks.ToArray(),
                     GetMatchingStacks = (wi, bs, _) =>
@@ -186,7 +186,7 @@ namespace Bonfires
                 {
                     if (api.Side == EnumAppSide.Client)
                     {
-                        (api as ICoreClientAPI)?.TriggerIngameError(this, "notenough", Lang.Get("vintage-bonfires:bonfire-notenoughfirewood", FIREWOOD_CONSUME_AMOUNT));
+                        (api as ICoreClientAPI)?.TriggerIngameError(this, "notenough", Lang.Get("vintagebonfires:bonfire-notenoughfirewood", FIREWOOD_CONSUME_AMOUNT));
                     }
                     return true; // Prevents construction and consumption of the insufficient amount of firewood.
                 }

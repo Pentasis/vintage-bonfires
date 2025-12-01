@@ -22,7 +22,7 @@
 		"handbook": {
 			"groupBy": ["bonfire-*"],
 			"extraSections": [
-				{ "title": "vintage-bonfires:handbooktitle-bonfire", "text": "vintage-bonfires:handbooktext-bonfire" }
+				{ "title": "vintagebonfires:handbooktitle-bonfire", "text": "vintagebonfires:handbooktext-bonfire" }
 			]
 		}
 	},

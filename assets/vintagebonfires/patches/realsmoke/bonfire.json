@@ -1,6 +1,6 @@
 [
   {
-    "file": "vintage-bonfires:blocktypes/bonfire.json",
+    "file": "vintagebonfires:blocktypes/bonfire.json",
     "op": "addmerge",
     "path": "/entityBehaviorsByType",
     "value": {},
@@ -8,7 +8,7 @@
     "dependsOn": [ { "modid": "realsmoke" } ]
   },
   {
-    "file": "vintage-bonfires:blocktypes/bonfire.json",
+    "file": "vintagebonfires:blocktypes/bonfire.json",
     "op": "addmerge",
     "path": "/entityBehaviorsByType/*-lit",
     "value": [
@@ -26,7 +26,7 @@
     "dependsOn": [ { "modid": "realsmoke" } ]
   },
   {
-    "file": "vintage-bonfires:blocktypes/bonfire.json",
+    "file": "vintagebonfires:blocktypes/bonfire.json",
     "op": "remove",
     "path": "/particlePropertiesByType/bonfire-lit/1",
     "side": "Server",
