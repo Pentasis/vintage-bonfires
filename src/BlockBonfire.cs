@@ -226,7 +226,7 @@ namespace Bonfires
             
             // --- Fueling Logic ---
             // If the bonfire is fully constructed (Unlit or Lit), interacting with firewood adds fuel.
-            if (currentStage == EBonfireStage.Unlit || currentStage == EBonfireStage.Lit)
+            else if (currentStage == EBonfireStage.Unlit || currentStage == EBonfireStage.Lit)
             {
                 if (bef.Refuel(1))
                 {
