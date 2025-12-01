@@ -8,6 +8,7 @@
   
   "vintage-bonfires:blockhelp-bonfire-fuel": "Add firewood",
   "vintage-bonfires:bonfire-fuel": "Firewood: {0}/{1}",
+  "vintage-bonfires:bonfire-notenoughfirewood": "Requires {0} firewood to build.",
 
   "handbooktitle-bonfire": "Bonfires",
   "handbooktext-bonfire": "Start a bonfire by crafting a bonfire base, placing it, build it up with 12 firewood (3x 4), fuelling it with at least 1 firewood, and lighting it with a torch.",

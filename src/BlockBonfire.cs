@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
@@ -186,6 +187,16 @@ namespace Bonfires
             // If the bonfire is in any stage before Unlit (or is Extinct), it's in the construction phase.
             if (currentStage == EBonfireStage.Base || currentStage == EBonfireStage.Construct1 || currentStage == EBonfireStage.Construct2 || currentStage == EBonfireStage.Extinct)
             {
+                // Check if the player has enough firewood before proceeding with construction.
+                if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative && hotbarSlot.StackSize < FIREWOOD_CONSUME_AMOUNT)
+                {
+                    if (api.Side == EnumAppSide.Client)
+                    {
+                        (api as ICoreClientAPI)?.TriggerIngameError(this, "notenough", Lang.Get("vintage-bonfires:bonfire-notenoughfirewood", FIREWOOD_CONSUME_AMOUNT));
+                    }
+                    return true; // Prevents construction and consumption of the insufficient amount of firewood.
+                }
+
                 string nextStateCodePart;
                 switch (currentStage)
                 {
