@@ -371,6 +371,13 @@ namespace Bonfires
                 _ambientSound.Dispose();
                 _ambientSound = null;
             }
+
+            // Drop remaining fuel when the block is broken.
+            if (Api.Side == EnumAppSide.Server && TotalFuel > 0)
+            {
+                var firewoodStack = new ItemStack(Api.World.GetItem(new AssetLocation("firewood")), TotalFuel);
+                Api.World.SpawnItemEntity(firewoodStack, Pos.ToVec3d().Add(0.5, 0.5, 0.5));
+            }
         }
 
         /// <summary>
