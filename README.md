@@ -1,6 +1,6 @@
 # Vintage Bonfires
 
-A Vintage Story mod that adds bonfires to the game.
+A Vintage Story mod that adds bonfires to the game; published at: https://mods.vintagestory.at/vintagebonfires
 
 Continued from [Bonfires](https://mods.vintagestory.at/bonfires) original idea by [Zarkonnen](https://mods.vintagestory.at/show/user/3A823AFC2B0FB0879692).*)
 
