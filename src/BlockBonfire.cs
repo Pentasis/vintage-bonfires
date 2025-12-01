@@ -12,7 +12,7 @@ namespace Bonfires
     /// This class defines the behavior of the bonfire block itself, primarily handling player interactions,
     /// state transitions between construction stages, and the ignition process.
     /// </summary>
-    public class BlockBonfire : Block, IIgnitable
+    public class BlockBonfire : Block, IIgnitable, ISmokeEmitter
     {
         // Constants for gameplay values to improve readability and ease of modification.
         private const float IGNITE_SECONDS = 3f;
@@ -241,6 +241,12 @@ namespace Bonfires
             }
 
             return base.OnBlockInteractStart(world, byPlayer, blockSel);
+        }
+        
+        public bool EmitsSmoke(BlockPos pos)
+        {
+            var bebonfire = api.World.BlockAccessor.GetBlockEntity(pos) as BlockEntityBonfire;
+            return bebonfire?.Burning == true;
         }
     }
 }
