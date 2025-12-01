@@ -177,12 +177,6 @@ namespace Bonfires
 
             var currentStage = (currentBlockInWorld as BlockBonfire)?.Stage ?? EBonfireStage.Extinct;
 
-            // Do not allow adding firewood if the bonfire is already lit.
-            if (currentStage == EBonfireStage.Lit)
-            {
-                return base.OnBlockInteractStart(world, byPlayer, blockSel);
-            }
-
             // --- Construction Logic ---
             // If the bonfire is in any stage before Unlit (or is Extinct), it's in the construction phase.
             if (currentStage == EBonfireStage.Base || currentStage == EBonfireStage.Construct1 || currentStage == EBonfireStage.Construct2 || currentStage == EBonfireStage.Extinct)
@@ -231,8 +225,8 @@ namespace Bonfires
             }
             
             // --- Fueling Logic ---
-            // If the bonfire is fully constructed (Unlit), interacting with firewood adds fuel.
-            else if (currentStage == EBonfireStage.Unlit)
+            // If the bonfire is fully constructed (Unlit or Lit), interacting with firewood adds fuel.
+            if (currentStage == EBonfireStage.Unlit || currentStage == EBonfireStage.Lit)
             {
                 if (bef.Refuel(1))
                 {
