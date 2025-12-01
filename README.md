@@ -9,18 +9,11 @@ This version has been updated to work with 1.21.x. The code has been largely rew
 
 ---
 
-## Description
-Rediscover the ancient art of fire-setting! This mod introduces bonfires, a powerful primitive tool designed to assist with early-game mining and rock-breaking by harnessing the power of thermal shock.
-Based on the real-world historical technique, Vintage Bonfires allows you to build a large, intense fire against a rock face. The prolonged, extreme heat weakens the stone, causing it to crack and become brittle. This makes difficult stone easier to mine or even shatters it completely, saving you tool durability and time.
-Perfect for the early-game prospector, Vintage Bonfires provides a satisfying and realistic step between your first stone tools and the age of metal. Use the environment to your advantage and master the techniques of the ancients!
-
-Or you can just light one in the town-center and look at it.
-
 ## Features
-- Fire-Setting Mechanic: Build a bonfire next to solid rock or ore veins. When the fire burns out, the intense heat will crack the adjacent stone. Cracked ore and rock is one tier easier to mine, allowing you to access valuable resources sooner with lower-tier tools.
+- A Cosy Bonfire: Once lit, the bonfire acts as a long-lasting heat and light source, perfect for a temporary basecamp or a town square. It burns 4x longer than a regular fire.
+- [Fire-Setting](https://en.wikipedia.org/wiki/Fire-setting) Mechanic: Build a bonfire next to solid rock or ore veins. When the fire burns out, the intense heat will crack the adjacent stone. Cracked ore and rock is one tier easier to mine, allowing you to access valuable resources sooner with lower-tier tools.
 - Shatter Rock: Don't want to waste your pickaxe on solid rock? Apply a second bonfire to an already cracked block to shatter it completely, breaking it into its stone or ore drops.
-- A Cosy Bonfire: Once lit, the bonfire acts as a long-lasting heat and light source, perfect for a temporary base camp or a town square. It burns 4x longer than a regular fire.
-- Integration with the [Real Smoke mod](https://mods.vintagestory.at/realsmoke) I NEED HELP WITH THIS! If anyone can look at my patch to see why no smoke is produced?
+- Integration with the [Real Smoke mod](https://mods.vintagestory.at/realsmoke).
 
 ## How to Use Your Bonfire
 1. Craft a Bonfire Base from the handbook.
@@ -34,7 +27,8 @@ Or you can just light one in the town-center and look at it.
 
 ## Planned Features (Will decide based on feedback)
 - Either remove coal ores from the  fire-settings mechanic or make them combustible?
-- Option to prevent monsters and animals from spawning and make them keep distance within a radius while lit? 
+- Option to prevent monsters and animals from spawning and make them keep distance within a radius while lit?
+- Add config-file with option for burn-time?
 
 ---
 
