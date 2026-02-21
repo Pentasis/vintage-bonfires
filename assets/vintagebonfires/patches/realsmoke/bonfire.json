@@ -15,8 +15,8 @@
       {
         "name": "BlockEntityBehaviorRealSmokeEmitter",
         "properties": {
-          "smokeProduction": 24,
-          "temperature": 1100,
+          "smokeProduction": 32,
+          "temperature": 700,
           "ventAbove": 1,
           "canVentSideways": true
         }
